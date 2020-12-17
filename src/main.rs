@@ -35,12 +35,22 @@ pub fn xor(a: Bit, b: Bit) -> Bit {
     and(or(a, b), nand(a, b))
 }
 
+pub fn mux(a: Bit, b: Bit, sel: Bit) -> Bit {
+    xor(and(a, not(sel)), and(b, sel))
+}
+
+pub fn dmux(input: Bit, sel: Bit) -> [Bit; 2] {
+    [and(input, not(sel)), and(input, sel)]
+}
+
 fn main() {
     println!("Hello, world!");
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::{dmux, mux};
+
     use super::Bit::{I, O};
     use super::{and, nand, not, or, xor};
 
@@ -80,5 +90,25 @@ mod tests {
         assert_eq!(xor(I, O), I);
         assert_eq!(xor(O, I), I);
         assert_eq!(xor(I, I), O);
+    }
+
+    #[test]
+    fn for_mux() {
+        assert_eq!(mux(O, O, O), O);
+        assert_eq!(mux(O, I, O), O);
+        assert_eq!(mux(I, O, O), I);
+        assert_eq!(mux(I, I, O), I);
+        assert_eq!(mux(O, O, I), O);
+        assert_eq!(mux(O, I, I), I);
+        assert_eq!(mux(I, O, I), O);
+        assert_eq!(mux(I, I, I), I);
+    }
+
+    #[test]
+    fn for_dmux() {
+        assert_eq!(dmux(O, O), [O, O]);
+        assert_eq!(dmux(O, I), [O, O]);
+        assert_eq!(dmux(I, O), [I, O]);
+        assert_eq!(dmux(I, I), [O, I]);
     }
 }
