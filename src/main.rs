@@ -8,9 +8,9 @@ pub enum Bit {
 }
 
 #[derive(Debug, PartialEq)]
-pub struct Bit16([Bit; 16]);
+pub struct Word([Bit; 16]);
 
-impl Index<usize> for Bit16 {
+impl Index<usize> for Word {
     type Output = Bit;
     fn index(&self, index: usize) -> &Self::Output {
         if index > 15 {
@@ -57,8 +57,8 @@ pub fn dmux(input: Bit, sel: Bit) -> [Bit; 2] {
     [and(input, not(sel)), and(input, sel)]
 }
 
-pub fn not16(bits: Bit16) -> Bit16 {
-    Bit16([
+pub fn not16(bits: Word) -> Word {
+    Word([
         not(bits[0]),
         not(bits[1]),
         not(bits[2]),
@@ -85,7 +85,7 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::Bit::{I, O};
-    use super::{and, dmux, mux, nand, not, not16, or, xor, Bit16};
+    use super::{and, dmux, mux, nand, not, not16, or, xor, Word};
 
     #[test]
     fn for_nand() {
@@ -147,15 +147,15 @@ mod tests {
 
     #[test]
     fn for_not16() {
-        assert_eq!(not16(Bit16([O; 16])), Bit16([I; 16]));
-        assert_eq!(not16(Bit16([I; 16])), Bit16([O; 16]));
+        assert_eq!(not16(Word([O; 16])), Word([I; 16]));
+        assert_eq!(not16(Word([I; 16])), Word([O; 16]));
         assert_eq!(
-            not16(Bit16([I, O, I, O, I, O, I, O, I, O, I, O, I, O, I, O])),
-            Bit16([O, I, O, I, O, I, O, I, O, I, O, I, O, I, O, I])
+            not16(Word([I, O, I, O, I, O, I, O, I, O, I, O, I, O, I, O])),
+            Word([O, I, O, I, O, I, O, I, O, I, O, I, O, I, O, I])
         );
         assert_eq!(
-            not16(Bit16([I, I, I, O, I, O, I, O, I, O, I, O, I, I, I, O])),
-            Bit16([O, O, O, I, O, I, O, I, O, I, O, I, O, O, O, I])
+            not16(Word([I, I, I, O, I, O, I, O, I, O, I, O, I, I, I, O])),
+            Word([O, O, O, I, O, I, O, I, O, I, O, I, O, O, O, I])
         );
     }
 }
