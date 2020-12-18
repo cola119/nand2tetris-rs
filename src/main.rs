@@ -1,9 +1,23 @@
 use crate::Bit::{I, O};
+use std::ops::Index;
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub enum Bit {
     O,
     I,
+}
+
+#[derive(Debug, PartialEq)]
+pub struct Bit16([Bit; 16]);
+
+impl Index<usize> for Bit16 {
+    type Output = Bit;
+    fn index(&self, index: usize) -> &Self::Output {
+        if index > 15 {
+            panic!(format!("index {} is out of range.", index));
+        }
+        &self.0[index]
+    }
 }
 
 pub fn nand(a: Bit, b: Bit) -> Bit {
@@ -43,16 +57,35 @@ pub fn dmux(input: Bit, sel: Bit) -> [Bit; 2] {
     [and(input, not(sel)), and(input, sel)]
 }
 
+pub fn not16(bits: Bit16) -> Bit16 {
+    Bit16([
+        not(bits[0]),
+        not(bits[1]),
+        not(bits[2]),
+        not(bits[3]),
+        not(bits[4]),
+        not(bits[5]),
+        not(bits[6]),
+        not(bits[7]),
+        not(bits[8]),
+        not(bits[9]),
+        not(bits[10]),
+        not(bits[11]),
+        not(bits[12]),
+        not(bits[13]),
+        not(bits[14]),
+        not(bits[15]),
+    ])
+}
+
 fn main() {
     println!("Hello, world!");
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{dmux, mux};
-
     use super::Bit::{I, O};
-    use super::{and, nand, not, or, xor};
+    use super::{and, dmux, mux, nand, not, not16, or, xor, Bit16};
 
     #[test]
     fn for_nand() {
@@ -110,5 +143,19 @@ mod tests {
         assert_eq!(dmux(O, I), [O, O]);
         assert_eq!(dmux(I, O), [I, O]);
         assert_eq!(dmux(I, I), [O, I]);
+    }
+
+    #[test]
+    fn for_not16() {
+        assert_eq!(not16(Bit16([O; 16])), Bit16([I; 16]));
+        assert_eq!(not16(Bit16([I; 16])), Bit16([O; 16]));
+        assert_eq!(
+            not16(Bit16([I, O, I, O, I, O, I, O, I, O, I, O, I, O, I, O])),
+            Bit16([O, I, O, I, O, I, O, I, O, I, O, I, O, I, O, I])
+        );
+        assert_eq!(
+            not16(Bit16([I, I, I, O, I, O, I, O, I, O, I, O, I, I, I, O])),
+            Bit16([O, O, O, I, O, I, O, I, O, I, O, I, O, O, O, I])
+        );
     }
 }
