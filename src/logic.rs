@@ -11,6 +11,12 @@ pub enum Bit {
 #[derive(Debug, PartialEq)]
 pub struct Word([Bit; 16]);
 
+impl Word {
+    pub fn new(bits: [Bit; 16]) -> Self {
+        Self(bits)
+    }
+}
+
 impl Index<usize> for Word {
     type Output = Bit;
     fn index(&self, index: usize) -> &Self::Output {
