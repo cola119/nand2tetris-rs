@@ -12,6 +12,10 @@ pub fn full_adder(a: Bit, b: Bit, c: Bit) -> [Bit; 2] {
     [or(bc[0], a_bc1[0]), a_bc1[1]]
 }
 
+pub fn inc(a: Bit) -> [Bit; 2] {
+    half_adder(a, I)
+}
+
 pub fn add16(a: Word, b: Word) -> Word {
     let added15 = half_adder(a[15], b[15]);
     let added14 = full_adder(a[14], b[14], added15[0]);
@@ -36,9 +40,16 @@ pub fn add16(a: Word, b: Word) -> Word {
     ])
 }
 
+pub fn inc16(a: Word) -> Word {
+    add16(
+        a,
+        Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, I]),
+    )
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{add16, full_adder, half_adder};
+    use super::{add16, full_adder, half_adder, inc, inc16};
     use crate::logic::Bit::{I, O};
     use crate::Word;
 
@@ -60,6 +71,32 @@ mod tests {
         assert_eq!(full_adder(I, O, I), [I, O]);
         assert_eq!(full_adder(I, I, O), [I, O]);
         assert_eq!(full_adder(I, I, I), [I, I]);
+    }
+
+    #[test]
+    fn for_inc() {
+        assert_eq!(inc(O), [O, I]);
+        assert_eq!(inc(I), [I, O]);
+    }
+
+    #[test]
+    fn for_inc16() {
+        assert_eq!(
+            inc16(Word::new([O; 16])),
+            Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, I])
+        );
+        assert_eq!(
+            inc16(Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, I])),
+            Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, I, O])
+        );
+        assert_eq!(
+            inc16(Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, I, O])),
+            Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, I, I])
+        );
+        assert_eq!(
+            inc16(Word::new([I; 16])),
+            Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O])
+        );
     }
 
     #[test]
