@@ -8,7 +8,7 @@ pub enum Bit {
     I,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub struct Word([Bit; 16]);
 
 impl Word {
@@ -148,10 +148,20 @@ pub fn mux16(a: Word, b: Word, sel: Bit) -> Word {
     ])
 }
 
+pub fn or8way(a: [Bit; 8]) -> Bit {
+    or(
+        or(or(a[0], a[7]), or(a[1], a[6])),
+        or(or(a[2], a[5]), or(a[3], a[4])),
+    )
+}
+
 #[cfg(test)]
 mod tests {
-    use super::Bit::{I, O};
     use super::{and, and16, dmux, mux, mux16, nand, not, not16, or, or16, xor, Word};
+    use super::{
+        or8way,
+        Bit::{I, O},
+    };
 
     #[test]
     fn for_nand() {
@@ -295,5 +305,15 @@ mod tests {
             ),
             Word([O, I, O, I, O, I, O, I, O, I, O, I, O, I, O, I])
         );
+    }
+
+    #[test]
+    fn for_or8way() {
+        assert_eq!(or8way([O; 8]), O);
+        assert_eq!(or8way([I; 8]), I);
+        assert_eq!(or8way([O, O, O, O, O, O, O, I]), I);
+        assert_eq!(or8way([O, O, O, O, O, O, I, I]), I);
+        assert_eq!(or8way([O, O, I, O, O, O, I, I]), I);
+        assert_eq!(or8way([O, O, O, I, O, O, O, O]), I);
     }
 }

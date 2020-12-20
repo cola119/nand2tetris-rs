@@ -1,5 +1,6 @@
 #![allow(unused_imports)]
 
+mod alu;
 mod arithmetic;
 mod logic;
 
