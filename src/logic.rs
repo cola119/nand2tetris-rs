@@ -1,24 +1,24 @@
-#![allow(dead_code)]
-use crate::Bit::{I, O};
+#![allow(dead_code, non_camel_case_types)]
+use crate::bit::{I, O};
 use std::ops::Index;
 
 #[derive(Debug, PartialEq, Copy, Clone)]
-pub enum Bit {
+pub enum bit {
     O,
     I,
 }
 
 #[derive(Debug, PartialEq, Copy, Clone)]
-pub struct Word([Bit; 16]);
+pub struct Word([bit; 16]);
 
 impl Word {
-    pub fn new(bits: [Bit; 16]) -> Self {
+    pub fn new(bits: [bit; 16]) -> Self {
         Self(bits)
     }
 }
 
 impl Index<usize> for Word {
-    type Output = Bit;
+    type Output = bit;
     fn index(&self, index: usize) -> &Self::Output {
         if index > 15 {
             panic!(format!("index {} is out of range.", index));
@@ -27,7 +27,7 @@ impl Index<usize> for Word {
     }
 }
 
-pub fn nand(a: Bit, b: Bit) -> Bit {
+pub fn nand(a: bit, b: bit) -> bit {
     match a {
         O => match b {
             O => I,
@@ -40,27 +40,27 @@ pub fn nand(a: Bit, b: Bit) -> Bit {
     }
 }
 
-pub fn not(a: Bit) -> Bit {
+pub fn not(a: bit) -> bit {
     nand(a, I)
 }
 
-pub fn and(a: Bit, b: Bit) -> Bit {
+pub fn and(a: bit, b: bit) -> bit {
     not(nand(a, b))
 }
 
-pub fn or(a: Bit, b: Bit) -> Bit {
+pub fn or(a: bit, b: bit) -> bit {
     nand(not(a), not(b))
 }
 
-pub fn xor(a: Bit, b: Bit) -> Bit {
+pub fn xor(a: bit, b: bit) -> bit {
     and(or(a, b), nand(a, b))
 }
 
-pub fn mux(a: Bit, b: Bit, sel: Bit) -> Bit {
+pub fn mux(a: bit, b: bit, sel: bit) -> bit {
     xor(and(a, not(sel)), and(b, sel))
 }
 
-pub fn dmux(input: Bit, sel: Bit) -> [Bit; 2] {
+pub fn dmux(input: bit, sel: bit) -> [bit; 2] {
     [and(input, not(sel)), and(input, sel)]
 }
 
@@ -127,7 +127,7 @@ pub fn or16(a: Word, b: Word) -> Word {
     ])
 }
 
-pub fn mux16(a: Word, b: Word, sel: Bit) -> Word {
+pub fn mux16(a: Word, b: Word, sel: bit) -> Word {
     Word([
         mux(a[0], b[0], sel),
         mux(a[1], b[1], sel),
@@ -148,7 +148,7 @@ pub fn mux16(a: Word, b: Word, sel: Bit) -> Word {
     ])
 }
 
-pub fn or8way(a: [Bit; 8]) -> Bit {
+pub fn or8way(a: [bit; 8]) -> bit {
     or(
         or(or(a[0], a[7]), or(a[1], a[6])),
         or(or(a[2], a[5]), or(a[3], a[4])),
@@ -159,8 +159,8 @@ pub fn or8way(a: [Bit; 8]) -> Bit {
 mod tests {
     use super::{and, and16, dmux, mux, mux16, nand, not, not16, or, or16, xor, Word};
     use super::{
+        bit::{I, O},
         or8way,
-        Bit::{I, O},
     };
 
     #[test]

@@ -5,7 +5,7 @@ mod arithmetic;
 mod logic;
 
 use arithmetic::*;
-use logic::Bit::{I, O};
+use logic::bit::{I, O};
 use logic::*;
 
 fn main() {

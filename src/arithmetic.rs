@@ -1,18 +1,18 @@
 #![allow(dead_code)]
-use crate::logic::Bit::{I, O};
+use crate::logic::bit::{I, O};
 use crate::logic::*;
 
-pub fn half_adder(a: Bit, b: Bit) -> [Bit; 2] {
+pub fn half_adder(a: bit, b: bit) -> [bit; 2] {
     [and(a, b), xor(a, b)]
 }
 
-pub fn full_adder(a: Bit, b: Bit, c: Bit) -> [Bit; 2] {
+pub fn full_adder(a: bit, b: bit, c: bit) -> [bit; 2] {
     let bc = half_adder(b, c);
     let a_bc1 = half_adder(a, bc[1]);
     [or(bc[0], a_bc1[0]), a_bc1[1]]
 }
 
-pub fn inc(a: Bit) -> [Bit; 2] {
+pub fn inc(a: bit) -> [bit; 2] {
     half_adder(a, I)
 }
 
@@ -50,7 +50,7 @@ pub fn inc16(a: Word) -> Word {
 #[cfg(test)]
 mod tests {
     use super::{add16, full_adder, half_adder, inc, inc16};
-    use crate::logic::Bit::{I, O};
+    use crate::logic::bit::{I, O};
     use crate::Word;
 
     #[test]

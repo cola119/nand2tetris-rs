@@ -1,19 +1,19 @@
 #![allow(dead_code)]
 use crate::arithmetic::*;
-use crate::logic::Bit::{I, O};
+use crate::logic::bit::{I, O};
 use crate::logic::*;
 
 // -> (f(x,y), zr, ng)
 pub fn alu(
     x: Word,
     y: Word,
-    zx: Bit,
-    nx: Bit,
-    zy: Bit,
-    ny: Bit,
-    f: Bit,
-    no: Bit,
-) -> (Word, Bit, Bit) {
+    zx: bit,
+    nx: bit,
+    zy: bit,
+    ny: bit,
+    f: bit,
+    no: bit,
+) -> (Word, bit, bit) {
     let all0 = Word::new([O; 16]);
     let x1 = mux16(x, all0, zx);
     let x2 = mux16(x1, not16(x1), nx);
