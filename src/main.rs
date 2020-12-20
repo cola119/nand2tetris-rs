@@ -2,6 +2,7 @@
 
 mod alu;
 mod arithmetic;
+mod dff;
 mod logic;
 
 use arithmetic::*;
