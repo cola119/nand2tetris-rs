@@ -94,6 +94,10 @@ impl Register {
             self.bits[15].output(clock),
         ])
     }
+    pub fn run(&mut self, clock_t: &Clock, input: Word, load: bit) -> Word {
+        self.input(clock_t, input, load);
+        self.output(clock_t)
+    }
 }
 
 #[cfg(test)]
@@ -186,8 +190,41 @@ mod tests {
         register.input(&clock, one, O);
         assert_eq!(register.output(&clock), one);
 
-        // clock.next();
-        // register.input(&clock, one, O);
-        // assert_eq!(register.output(&clock), one);
+        clock.next();
+        register.input(&clock, one, O);
+        assert_eq!(register.output(&clock), one);
+
+        clock.next();
+        register.input(&clock, zero, O);
+        assert_eq!(register.output(&clock), one);
+
+        clock.next();
+        register.input(&clock, zero, I);
+        assert_eq!(register.output(&clock), one);
+
+        clock.next();
+        register.input(&clock, zero, O);
+        assert_eq!(register.output(&clock), zero);
+    }
+
+    #[test]
+    fn for_register2() {
+        let something = Word::new([O, I, O, I, O, I, O, I, O, I, O, I, O, I, O, I]);
+        let zero = Word::new([O; 16]);
+        let mut clock = Clock::new();
+        let mut register = Register::new();
+
+        assert_eq!(register.run(&clock, something, I), zero);
+
+        clock.next();
+        assert_eq!(register.run(&clock, something, O), something);
+        clock.next();
+        assert_eq!(register.run(&clock, something, O), something);
+        clock.next();
+        assert_eq!(register.run(&clock, zero, O), something);
+        clock.next();
+        assert_eq!(register.run(&clock, zero, I), something);
+        clock.next();
+        assert_eq!(register.run(&clock, zero, O), zero);
     }
 }
