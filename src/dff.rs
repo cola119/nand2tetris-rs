@@ -26,6 +26,7 @@ impl Clock {
     }
 }
 
+#[derive(Copy, Clone)]
 pub struct Dff {
     prev: bit,
     current: bit,

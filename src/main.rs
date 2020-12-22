@@ -4,6 +4,7 @@ mod alu;
 mod arithmetic;
 mod dff;
 mod logic;
+mod sequential;
 
 use arithmetic::*;
 use logic::bit::{I, O};
