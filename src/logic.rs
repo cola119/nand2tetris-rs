@@ -155,6 +155,72 @@ pub fn or8way(a: [bit; 8]) -> bit {
     )
 }
 
+pub fn mux2(a: bit, b: bit, c: bit, d: bit, sel: [bit; 2]) -> bit {
+    mux(mux(a, b, sel[1]), mux(c, d, sel[1]), sel[0])
+}
+
+pub fn mux3(a: bit, b: bit, c: bit, d: bit, e: bit, f: bit, g: bit, h: bit, sel: [bit; 3]) -> bit {
+    mux2(
+        mux(a, b, sel[2]),
+        mux(c, d, sel[2]),
+        mux(e, f, sel[2]),
+        mux(g, h, sel[2]),
+        [sel[0], sel[1]],
+    )
+}
+
+pub fn mux4way16(a: Word, b: Word, c: Word, d: Word, sel: [bit; 2]) -> Word {
+    Word::new([
+        mux2(a[0], b[0], c[0], d[0], sel),
+        mux2(a[1], b[1], c[1], d[1], sel),
+        mux2(a[2], b[2], c[2], d[2], sel),
+        mux2(a[3], b[3], c[3], d[3], sel),
+        mux2(a[4], b[4], c[4], d[4], sel),
+        mux2(a[5], b[5], c[5], d[5], sel),
+        mux2(a[6], b[6], c[6], d[6], sel),
+        mux2(a[7], b[7], c[7], d[7], sel),
+        mux2(a[8], b[8], c[8], d[8], sel),
+        mux2(a[9], b[9], c[9], d[9], sel),
+        mux2(a[10], b[10], c[10], d[10], sel),
+        mux2(a[11], b[11], c[11], d[11], sel),
+        mux2(a[12], b[12], c[12], d[12], sel),
+        mux2(a[13], b[13], c[13], d[13], sel),
+        mux2(a[14], b[14], c[14], d[14], sel),
+        mux2(a[15], b[15], c[15], d[15], sel),
+    ])
+}
+
+pub fn mux8way16(
+    a: Word,
+    b: Word,
+    c: Word,
+    d: Word,
+    e: Word,
+    f: Word,
+    g: Word,
+    h: Word,
+    sel: [bit; 3],
+) -> Word {
+    Word::new([
+        mux3(a[0], b[0], c[0], d[0], e[0], f[0], g[0], h[0], sel),
+        mux3(a[1], b[1], c[1], d[1], e[1], f[1], g[1], h[1], sel),
+        mux3(a[2], b[2], c[2], d[2], e[2], f[2], g[2], h[2], sel),
+        mux3(a[3], b[3], c[3], d[3], e[3], f[3], g[3], h[3], sel),
+        mux3(a[4], b[4], c[4], d[4], e[4], f[4], g[4], h[4], sel),
+        mux3(a[5], b[5], c[5], d[5], e[5], f[5], g[5], h[5], sel),
+        mux3(a[6], b[6], c[6], d[6], e[6], f[6], g[6], h[6], sel),
+        mux3(a[7], b[7], c[7], d[7], e[7], f[7], g[7], h[7], sel),
+        mux3(a[8], b[8], c[8], d[8], e[8], f[8], g[8], h[8], sel),
+        mux3(a[9], b[9], c[9], d[9], e[9], f[9], g[9], h[9], sel),
+        mux3(a[10], b[10], c[10], d[10], e[10], f[10], g[10], h[10], sel),
+        mux3(a[11], b[11], c[11], d[11], e[11], f[11], g[11], h[11], sel),
+        mux3(a[12], b[12], c[12], d[12], e[12], f[12], g[12], h[12], sel),
+        mux3(a[13], b[13], c[13], d[13], e[13], f[13], g[13], h[13], sel),
+        mux3(a[14], b[14], c[14], d[14], e[14], f[14], g[14], h[14], sel),
+        mux3(a[15], b[15], c[15], d[15], e[15], f[15], g[15], h[15], sel),
+    ])
+}
+
 #[cfg(test)]
 mod tests {
     use super::{and, and16, dmux, mux, mux16, nand, not, not16, or, or16, xor, Word};
@@ -162,6 +228,10 @@ mod tests {
         bit::{I, O},
         or8way,
     };
+    use crate::mux2;
+    use crate::mux3;
+    use crate::mux4way16;
+    use crate::mux8way16;
 
     #[test]
     fn for_nand() {
@@ -315,5 +385,73 @@ mod tests {
         assert_eq!(or8way([O, O, O, O, O, O, I, I]), I);
         assert_eq!(or8way([O, O, I, O, O, O, I, I]), I);
         assert_eq!(or8way([O, O, O, I, O, O, O, O]), I);
+    }
+
+    #[test]
+    fn for_mux2() {
+        assert_eq!(mux2(I, O, O, O, [O, O]), I);
+        assert_eq!(mux2(O, I, O, O, [O, I]), I);
+        assert_eq!(mux2(O, O, I, O, [I, O]), I);
+        assert_eq!(mux2(O, O, O, I, [I, I]), I);
+    }
+
+    #[test]
+    fn for_mux3() {
+        assert_eq!(mux3(I, O, O, O, O, O, O, O, [O, O, O]), I);
+        assert_eq!(mux3(O, I, O, O, O, O, O, O, [O, O, I]), I);
+        assert_eq!(mux3(O, O, I, O, O, O, O, O, [O, I, O]), I);
+        assert_eq!(mux3(O, O, O, I, O, O, O, O, [O, I, I]), I);
+        assert_eq!(mux3(O, O, O, O, I, O, O, O, [I, O, O]), I);
+        assert_eq!(mux3(O, O, O, O, O, I, O, O, [I, O, I]), I);
+        assert_eq!(mux3(O, O, O, O, O, O, I, O, [I, I, O]), I);
+        assert_eq!(mux3(O, O, O, O, O, O, O, I, [I, I, I]), I);
+    }
+
+    #[test]
+    fn for_mux4way16() {
+        let zero = Word::new([O; 16]);
+        let one = Word::new([I; 16]);
+        assert_eq!(mux4way16(one, zero, zero, zero, [O, O]), one);
+        assert_eq!(mux4way16(zero, one, zero, zero, [O, I]), one);
+        assert_eq!(mux4way16(zero, zero, one, zero, [I, O]), one);
+        assert_eq!(mux4way16(zero, zero, zero, one, [I, I]), one);
+    }
+
+    #[test]
+    fn for_mux8way16() {
+        let zero = Word::new([O; 16]);
+        let one = Word::new([I; 16]);
+        assert_eq!(
+            mux8way16(one, zero, zero, zero, zero, zero, zero, zero, [O, O, O]),
+            one
+        );
+        assert_eq!(
+            mux8way16(zero, one, zero, zero, zero, zero, zero, zero, [O, O, I]),
+            one
+        );
+        assert_eq!(
+            mux8way16(zero, zero, one, zero, zero, zero, zero, zero, [O, I, O]),
+            one
+        );
+        assert_eq!(
+            mux8way16(zero, zero, zero, one, zero, zero, zero, zero, [O, I, I]),
+            one
+        );
+        assert_eq!(
+            mux8way16(zero, zero, zero, zero, one, zero, zero, zero, [I, O, O]),
+            one
+        );
+        assert_eq!(
+            mux8way16(zero, zero, zero, zero, zero, one, zero, zero, [I, O, I]),
+            one
+        );
+        assert_eq!(
+            mux8way16(zero, zero, zero, zero, zero, zero, one, zero, [I, I, O]),
+            one
+        );
+        assert_eq!(
+            mux8way16(zero, zero, zero, zero, zero, zero, zero, one, [I, I, I]),
+            one
+        );
     }
 }
