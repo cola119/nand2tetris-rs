@@ -221,9 +221,58 @@ pub fn mux8way16(
     ])
 }
 
+pub fn dmux4way(input: bit, sel: [bit; 2]) -> [bit; 4] {
+    [
+        and(and(not(xor(sel[0], O)), not(xor(sel[1], O))), input),
+        and(and(not(xor(sel[0], O)), not(xor(sel[1], I))), input),
+        and(and(not(xor(sel[0], I)), not(xor(sel[1], O))), input),
+        and(and(not(xor(sel[0], I)), not(xor(sel[1], I))), input),
+    ]
+}
+
+pub fn dmux8way(input: bit, sel: [bit; 3]) -> [bit; 8] {
+    let nxor = |a: bit, b: bit| -> bit { not(xor(a, b)) };
+    [
+        and(
+            and(and(nxor(sel[0], O), nxor(sel[1], O)), nxor(sel[2], O)),
+            input,
+        ),
+        and(
+            and(and(nxor(sel[0], O), nxor(sel[1], O)), nxor(sel[2], I)),
+            input,
+        ),
+        and(
+            and(and(nxor(sel[0], O), nxor(sel[1], I)), nxor(sel[2], O)),
+            input,
+        ),
+        and(
+            and(and(nxor(sel[0], O), nxor(sel[1], I)), nxor(sel[2], I)),
+            input,
+        ),
+        and(
+            and(and(nxor(sel[0], I), nxor(sel[1], O)), nxor(sel[2], O)),
+            input,
+        ),
+        and(
+            and(and(nxor(sel[0], I), nxor(sel[1], O)), nxor(sel[2], I)),
+            input,
+        ),
+        and(
+            and(and(nxor(sel[0], I), nxor(sel[1], I)), nxor(sel[2], O)),
+            input,
+        ),
+        and(
+            and(and(nxor(sel[0], I), nxor(sel[1], I)), nxor(sel[2], I)),
+            input,
+        ),
+    ]
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{and, and16, dmux, mux, mux16, nand, not, not16, or, or16, xor, Word};
+    use super::{
+        and, and16, dmux, dmux4way, dmux8way, mux, mux16, nand, not, not16, or, or16, xor, Word,
+    };
     use super::{
         bit::{I, O},
         or8way,
@@ -453,5 +502,25 @@ mod tests {
             mux8way16(zero, zero, zero, zero, zero, zero, zero, one, [I, I, I]),
             one
         );
+    }
+
+    #[test]
+    fn for_dmux4way() {
+        assert_eq!(dmux4way(I, [O, O]), [I, O, O, O]);
+        assert_eq!(dmux4way(I, [O, I]), [O, I, O, O]);
+        assert_eq!(dmux4way(I, [I, O]), [O, O, I, O]);
+        assert_eq!(dmux4way(I, [I, I]), [O, O, O, I]);
+    }
+
+    #[test]
+    fn for_dmux8way() {
+        assert_eq!(dmux8way(I, [O, O, O]), [I, O, O, O, O, O, O, O]);
+        assert_eq!(dmux8way(I, [O, O, I]), [O, I, O, O, O, O, O, O]);
+        assert_eq!(dmux8way(I, [O, I, O]), [O, O, I, O, O, O, O, O]);
+        assert_eq!(dmux8way(I, [O, I, I]), [O, O, O, I, O, O, O, O]);
+        assert_eq!(dmux8way(I, [I, O, O]), [O, O, O, O, I, O, O, O]);
+        assert_eq!(dmux8way(I, [I, O, I]), [O, O, O, O, O, I, O, O]);
+        assert_eq!(dmux8way(I, [I, I, O]), [O, O, O, O, O, O, I, O]);
+        assert_eq!(dmux8way(I, [I, I, I]), [O, O, O, O, O, O, O, I]);
     }
 }
