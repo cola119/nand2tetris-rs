@@ -4,6 +4,7 @@ mod alu;
 mod arithmetic;
 mod dff;
 mod logic;
+mod pc;
 mod ram;
 mod register;
 
