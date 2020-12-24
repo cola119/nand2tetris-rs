@@ -1,4 +1,5 @@
 #![allow(dead_code)]
+use crate::bit::I;
 use crate::dff::Clock;
 use crate::dff::ClockState::{Tick, Tock};
 use crate::mux16;
@@ -40,6 +41,45 @@ impl RAM8 {
             self.registers[6].output(&clock_t),
             self.registers[7].output(&clock_t),
             address,
+        )
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct RAM64 {
+    rams: [RAM8; 8],
+}
+
+impl RAM64 {
+    pub fn new() -> Self {
+        Self {
+            rams: [RAM8::new(); 8],
+        }
+    }
+    pub fn input(&mut self, clock_t: &Clock, input: Word, address: [bit; 6], load: bit) {
+        let load_bit = dmux8way(load, [address[0], address[1], address[2]]);
+        let register_address = [address[3], address[4], address[5]];
+        self.rams[0].input(clock_t, input, register_address, load_bit[0]);
+        self.rams[1].input(clock_t, input, register_address, load_bit[1]);
+        self.rams[2].input(clock_t, input, register_address, load_bit[2]);
+        self.rams[3].input(clock_t, input, register_address, load_bit[3]);
+        self.rams[4].input(clock_t, input, register_address, load_bit[4]);
+        self.rams[5].input(clock_t, input, register_address, load_bit[5]);
+        self.rams[6].input(clock_t, input, register_address, load_bit[6]);
+        self.rams[7].input(clock_t, input, register_address, load_bit[7]);
+    }
+    pub fn output(self, clock_t: &Clock, address: [bit; 6]) -> Word {
+        let register_address = [address[3], address[4], address[5]];
+        mux8way16(
+            self.rams[0].output(clock_t, register_address),
+            self.rams[1].output(clock_t, register_address),
+            self.rams[2].output(clock_t, register_address),
+            self.rams[3].output(clock_t, register_address),
+            self.rams[4].output(clock_t, register_address),
+            self.rams[5].output(clock_t, register_address),
+            self.rams[6].output(clock_t, register_address),
+            self.rams[7].output(clock_t, register_address),
+            [address[0], address[1], address[2]],
         )
     }
 }
@@ -234,5 +274,41 @@ mod tests {
         assert_eq!(ram8.output(&clock, [I, O, I]), word1);
         assert_eq!(ram8.output(&clock, [I, I, O]), zero);
         assert_eq!(ram8.output(&clock, [I, I, I]), zero);
+    }
+
+    #[test]
+    fn for_ram64() {
+        let zero = Word::new([O; 16]);
+        let mut clock = Clock::new();
+        let mut ram64 = RAM64::new();
+        let word1 = Word::new([I, O, I, O, I, O, I, O, I, O, I, O, I, O, I, O]);
+
+        ram64.input(&clock, word1, [O, O, O, O, O, O], I);
+        assert_eq!(ram64.output(&clock, [O, O, O, O, O, O]), zero);
+
+        clock.next();
+        clock.next();
+        ram64.input(&clock, word1, [O, O, I, O, O, O], I);
+        assert_eq!(ram64.output(&clock, [O, O, O, O, O, O]), word1);
+
+        clock.next();
+        clock.next();
+        ram64.input(&clock, word1, [O, O, O, O, O, I], O);
+        assert_eq!(ram64.output(&clock, [O, O, O, O, O, O]), word1);
+        assert_eq!(ram64.output(&clock, [O, O, I, O, O, O]), word1);
+
+        clock.next();
+        clock.next();
+        ram64.input(&clock, word1, [O, O, O, O, O, I], I);
+        assert_eq!(ram64.output(&clock, [O, O, O, O, O, O]), word1);
+        assert_eq!(ram64.output(&clock, [O, O, I, O, O, O]), word1);
+        assert_eq!(ram64.output(&clock, [O, O, O, O, O, I]), zero);
+
+        clock.next();
+        clock.next();
+        ram64.input(&clock, word1, [O, O, O, O, O, I], I);
+        assert_eq!(ram64.output(&clock, [O, O, O, O, O, O]), word1);
+        assert_eq!(ram64.output(&clock, [O, O, I, O, O, O]), word1);
+        assert_eq!(ram64.output(&clock, [O, O, O, O, O, I]), word1);
     }
 }
