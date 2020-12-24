@@ -4,6 +4,7 @@ mod alu;
 mod arithmetic;
 mod dff;
 mod logic;
+mod ram;
 mod register;
 
 use arithmetic::*;

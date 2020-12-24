@@ -115,7 +115,7 @@ mod tests {
 
         clock.next();
         bit.input(&clock, O, O);
-        // Tock prev: I, cur: I
+        // Tock prev: I, cur: I  load=0の時、cur=prevとなるので古い値がが引き継がれてゆく。保存
         assert_eq!(bit.output(&clock), I);
 
         clock.next();
