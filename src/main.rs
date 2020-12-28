@@ -2,6 +2,7 @@
 
 mod alu;
 mod arithmetic;
+mod cpu;
 mod dff;
 mod logic;
 mod pc;

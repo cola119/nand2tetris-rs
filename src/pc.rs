@@ -46,6 +46,11 @@ impl PC {
     pub fn output(self, clock_t: &Clock) -> Word {
         self.register.output(clock_t)
     }
+
+    pub fn run(&mut self, clock_t: &Clock, input: Word, incr: bit, load: bit, reset: bit) -> Word {
+        self.input(clock_t, input, incr, load, reset);
+        self.output(clock_t)
+    }
 }
 
 #[cfg(test)]
