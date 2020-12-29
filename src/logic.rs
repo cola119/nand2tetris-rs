@@ -1,5 +1,6 @@
 #![allow(dead_code, non_camel_case_types)]
 use crate::bit::{I, O};
+use core::panic;
 use std::ops::Index;
 
 #[derive(Debug, PartialEq, Copy, Clone)]
@@ -11,6 +12,24 @@ pub enum bit {
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub struct Word([bit; 16]);
 
+impl From<&str> for Word {
+    fn from(str: &str) -> Self {
+        let char_bits: Vec<char> = str.chars().collect();
+        if char_bits.len() != 16 {
+            panic!(&format!("couldn't parse {:?}", str));
+        }
+        let mut bits = [O; 16];
+        for i in 0..16 {
+            bits[i] = match char_bits[i].to_digit(10) {
+                Some(0) => O,
+                Some(1) => I,
+                _ => panic!(&format!("unknown number {}", char_bits[i])),
+            }
+        }
+        Word::new(bits)
+    }
+}
+
 impl Word {
     pub fn new(bits: [bit; 16]) -> Self {
         Self(bits)
@@ -21,7 +40,7 @@ impl Index<usize> for Word {
     type Output = bit;
     fn index(&self, index: usize) -> &Self::Output {
         if index > 15 {
-            panic!(format!("index {} is out of range.", index));
+            panic!(&format!("index {} is out of range.", index));
         }
         &self.0[index]
     }
@@ -522,5 +541,30 @@ mod tests {
         assert_eq!(dmux8way(I, [I, O, I]), [O, O, O, O, O, I, O, O]);
         assert_eq!(dmux8way(I, [I, I, O]), [O, O, O, O, O, O, I, O]);
         assert_eq!(dmux8way(I, [I, I, I]), [O, O, O, O, O, O, O, I]);
+    }
+
+    #[test]
+    fn for_word_from() {
+        assert_eq!(Word::from("0000000000000000"), Word::new([O; 16]));
+        assert_eq!(Word::from("1111111111111111"), Word::new([I; 16]));
+        assert_eq!(
+            Word::from("0101010101010101"),
+            Word::new([O, I, O, I, O, I, O, I, O, I, O, I, O, I, O, I])
+        );
+        assert_eq!(
+            Word::from("0010101010101010"),
+            Word::new([O, O, I, O, I, O, I, O, I, O, I, O, I, O, I, O])
+        );
+    }
+
+    #[test]
+    #[should_panic]
+    fn for_word_from2() {
+        Word::from("11");
+    }
+    #[test]
+    #[should_panic]
+    fn for_word_from3() {
+        Word::from("000000000000000a");
     }
 }
