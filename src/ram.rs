@@ -1,12 +1,12 @@
 #![allow(dead_code)]
-use crate::bit::I;
-use crate::dff::Clock;
 use crate::dff::ClockState::{Tick, Tock};
 use crate::mux16;
 use crate::register::Register;
 use crate::Word;
 use crate::{bit, logic::mux8way16};
+use crate::{bit::I, logic::dmux4way};
 use crate::{bit::O, logic::dmux8way};
+use crate::{dff::Clock, logic::mux4way16};
 
 #[derive(Debug, Clone, Copy)]
 pub struct RAM8 {
@@ -80,6 +80,162 @@ impl RAM64 {
             self.rams[6].output(clock_t, register_address),
             self.rams[7].output(clock_t, register_address),
             [address[0], address[1], address[2]],
+        )
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct RAM512 {
+    rams: [RAM64; 8],
+}
+impl RAM512 {
+    pub fn new() -> Self {
+        Self {
+            rams: [RAM64::new(); 8],
+        }
+    }
+    pub fn input(&mut self, clock_t: &Clock, input: Word, address: [bit; 9], load: bit) {
+        let load_bit = dmux8way(load, [address[0], address[1], address[2]]);
+        let register_address = [
+            address[3], address[4], address[5], address[6], address[7], address[8],
+        ];
+        self.rams[0].input(clock_t, input, register_address, load_bit[0]);
+        self.rams[1].input(clock_t, input, register_address, load_bit[1]);
+        self.rams[2].input(clock_t, input, register_address, load_bit[2]);
+        self.rams[3].input(clock_t, input, register_address, load_bit[3]);
+        self.rams[4].input(clock_t, input, register_address, load_bit[4]);
+        self.rams[5].input(clock_t, input, register_address, load_bit[5]);
+        self.rams[6].input(clock_t, input, register_address, load_bit[6]);
+        self.rams[7].input(clock_t, input, register_address, load_bit[7]);
+    }
+    pub fn output(self, clock_t: &Clock, address: [bit; 9]) -> Word {
+        let register_address = [
+            address[3], address[4], address[5], address[6], address[7], address[8],
+        ];
+        mux8way16(
+            self.rams[0].output(clock_t, register_address),
+            self.rams[1].output(clock_t, register_address),
+            self.rams[2].output(clock_t, register_address),
+            self.rams[3].output(clock_t, register_address),
+            self.rams[4].output(clock_t, register_address),
+            self.rams[5].output(clock_t, register_address),
+            self.rams[6].output(clock_t, register_address),
+            self.rams[7].output(clock_t, register_address),
+            [address[0], address[1], address[2]],
+        )
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct RAM4K {
+    rams: [RAM512; 8],
+}
+impl RAM4K {
+    pub fn new() -> Self {
+        Self {
+            rams: [RAM512::new(); 8],
+        }
+    }
+    pub fn input(&mut self, clock_t: &Clock, input: Word, address: [bit; 12], load: bit) {
+        let load_bit = dmux8way(load, [address[0], address[1], address[2]]);
+        let register_address = [
+            address[3],
+            address[4],
+            address[5],
+            address[6],
+            address[7],
+            address[8],
+            address[9],
+            address[10],
+            address[11],
+        ];
+        self.rams[0].input(clock_t, input, register_address, load_bit[0]);
+        self.rams[1].input(clock_t, input, register_address, load_bit[1]);
+        self.rams[2].input(clock_t, input, register_address, load_bit[2]);
+        self.rams[3].input(clock_t, input, register_address, load_bit[3]);
+        self.rams[4].input(clock_t, input, register_address, load_bit[4]);
+        self.rams[5].input(clock_t, input, register_address, load_bit[5]);
+        self.rams[6].input(clock_t, input, register_address, load_bit[6]);
+        self.rams[7].input(clock_t, input, register_address, load_bit[7]);
+    }
+    pub fn output(self, clock_t: &Clock, address: [bit; 12]) -> Word {
+        let register_address = [
+            address[3],
+            address[4],
+            address[5],
+            address[6],
+            address[7],
+            address[8],
+            address[9],
+            address[10],
+            address[11],
+        ];
+        mux8way16(
+            self.rams[0].output(clock_t, register_address),
+            self.rams[1].output(clock_t, register_address),
+            self.rams[2].output(clock_t, register_address),
+            self.rams[3].output(clock_t, register_address),
+            self.rams[4].output(clock_t, register_address),
+            self.rams[5].output(clock_t, register_address),
+            self.rams[6].output(clock_t, register_address),
+            self.rams[7].output(clock_t, register_address),
+            [address[0], address[1], address[2]],
+        )
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct RAM16K {
+    rams: [RAM4K; 4],
+}
+impl RAM16K {
+    pub fn new() -> Self {
+        Self {
+            rams: [RAM4K::new(); 4],
+        }
+    }
+    pub fn input(&mut self, clock_t: &Clock, input: Word, address: [bit; 14], load: bit) {
+        let load_bit = dmux4way(load, [address[0], address[1]]);
+        let register_address = [
+            address[2],
+            address[3],
+            address[4],
+            address[5],
+            address[6],
+            address[7],
+            address[8],
+            address[9],
+            address[10],
+            address[11],
+            address[12],
+            address[13],
+        ];
+        self.rams[0].input(clock_t, input, register_address, load_bit[0]);
+        self.rams[1].input(clock_t, input, register_address, load_bit[1]);
+        self.rams[2].input(clock_t, input, register_address, load_bit[2]);
+        self.rams[3].input(clock_t, input, register_address, load_bit[3]);
+    }
+    pub fn output(self, clock_t: &Clock, address: [bit; 14]) -> Word {
+        let register_address = [
+            address[2],
+            address[3],
+            address[4],
+            address[5],
+            address[6],
+            address[7],
+            address[8],
+            address[9],
+            address[10],
+            address[11],
+            address[12],
+            address[13],
+        ];
+        mux4way16(
+            self.rams[0].output(clock_t, register_address),
+            self.rams[1].output(clock_t, register_address),
+            self.rams[2].output(clock_t, register_address),
+            self.rams[3].output(clock_t, register_address),
+            [address[0], address[1]],
         )
     }
 }
