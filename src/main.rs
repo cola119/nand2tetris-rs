@@ -9,6 +9,7 @@ mod logic;
 mod pc;
 mod ram;
 mod register;
+mod screen;
 
 use arithmetic::*;
 use logic::bit::{I, O};

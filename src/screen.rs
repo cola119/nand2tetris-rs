@@ -1,0 +1,138 @@
+#![allow(dead_code)]
+use crate::logic::{
+    bit::{self, I, O},
+    dmux, mux, Word,
+};
+use crate::{dff::Clock, ram::RAM4K};
+
+#[derive(Debug, Clone, Copy)]
+pub struct Screen {
+    rams: [RAM4K; 2],
+}
+
+impl Screen {
+    pub fn new() -> Self {
+        Self {
+            rams: [RAM4K::new(); 2],
+        }
+    }
+
+    pub fn input(&mut self, clock_t: &Clock, input: Word, load: bit, address: [bit; 13]) {
+        let ram_addr = [
+            address[1],
+            address[2],
+            address[3],
+            address[4],
+            address[5],
+            address[6],
+            address[7],
+            address[8],
+            address[9],
+            address[10],
+            address[11],
+            address[12],
+        ];
+        let load_bits = dmux(load, address[0]);
+        self.rams[0].input(clock_t, input, ram_addr, load_bits[0]);
+        self.rams[1].input(clock_t, input, ram_addr, load_bits[1]);
+        // drawing
+    }
+
+    pub fn output(self, clock_t: &Clock, address: [bit; 13]) -> Word {
+        let ram_addr = [
+            address[1],
+            address[2],
+            address[3],
+            address[4],
+            address[5],
+            address[6],
+            address[7],
+            address[8],
+            address[9],
+            address[10],
+            address[11],
+            address[12],
+        ];
+        let out1 = self.rams[0].output(clock_t, ram_addr);
+        let out2 = self.rams[1].output(clock_t, ram_addr);
+        Word::new([
+            mux(out1[0], out2[0], address[0]),
+            mux(out1[1], out2[1], address[0]),
+            mux(out1[2], out2[2], address[0]),
+            mux(out1[3], out2[3], address[0]),
+            mux(out1[4], out2[4], address[0]),
+            mux(out1[5], out2[5], address[0]),
+            mux(out1[6], out2[6], address[0]),
+            mux(out1[7], out2[7], address[0]),
+            mux(out1[8], out2[8], address[0]),
+            mux(out1[9], out2[9], address[0]),
+            mux(out1[10], out2[10], address[0]),
+            mux(out1[11], out2[11], address[0]),
+            mux(out1[12], out2[12], address[0]),
+            mux(out1[13], out2[13], address[0]),
+            mux(out1[14], out2[14], address[0]),
+            mux(out1[15], out2[15], address[0]),
+        ])
+    }
+
+    pub fn print(self) {
+        // wip
+        let clock = Clock::new();
+        println!(
+            "{}{}",
+            self.rams[0]
+                .output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O])
+                .to_string(),
+            self.rams[0]
+                .output(&clock, [O, O, O, O, O, O, O, O, O, O, O, I])
+                .to_string()
+        );
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn for_screen() {
+        let mut clock = Clock::new();
+        let mut screen = Screen::new();
+        let word1 = Word::new([I; 16]);
+
+        screen.input(&clock, word1, I, [O, O, O, O, O, O, O, O, O, O, O, O, O]);
+        clock.next();
+        clock.next();
+        screen.input(&clock, word1, I, [O, O, O, O, O, O, O, O, O, O, O, O, I]);
+        assert_eq!(
+            screen.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O]),
+            word1
+        );
+        clock.next();
+        clock.next();
+        screen.input(&clock, word1, O, [O, O, O, O, O, O, O, O, O, O, O, I, O]);
+        assert_eq!(
+            screen.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O]),
+            word1
+        );
+        assert_eq!(
+            screen.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, I]),
+            word1
+        );
+        clock.next();
+        clock.next();
+        screen.input(&clock, word1, O, [O, O, O, O, O, O, O, O, O, O, O, I, O]);
+        assert_eq!(
+            screen.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O]),
+            word1
+        );
+        assert_eq!(
+            screen.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, I]),
+            word1
+        );
+        assert_eq!(
+            screen.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, I, O]),
+            Word::new([O; 16])
+        );
+    }
+}

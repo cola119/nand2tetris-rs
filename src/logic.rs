@@ -1,7 +1,13 @@
 #![allow(dead_code, non_camel_case_types)]
+use fmt::write;
+
 use crate::bit::{I, O};
 use core::panic;
-use std::ops::Index;
+use std::{
+    fmt::{self, Formatter},
+    ops::Index,
+    write,
+};
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub enum bit {
@@ -27,6 +33,23 @@ impl From<&str> for Word {
             }
         }
         Word::new(bits)
+    }
+}
+
+impl fmt::Display for Word {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        let str = self
+            .0
+            .iter()
+            .map(|bit| -> String {
+                match bit {
+                    O => "0".to_string(),
+                    I => "1".to_string(),
+                }
+            })
+            .collect::<Vec<String>>()
+            .join("");
+        write!(f, "{}", str)
     }
 }
 
