@@ -4,10 +4,10 @@ use std::{
     io::{BufRead, BufReader},
 };
 
-use crate::{
+use crate::base::{
     dff::Clock,
-    logic::bit::{I, O},
-    logic::{bit, dmux8way, mux4way16, mux8way16, Word},
+    logic::bit::I,
+    logic::{bit, dmux8way, mux8way16, Word},
     ram::RAM4K,
 };
 
@@ -114,14 +114,14 @@ impl ROM32K {
 #[cfg(test)]
 mod tests {
     use super::ROM32K;
-    use crate::logic::bit::{I, O};
-    use crate::{dff::Clock, logic::Word};
+    use crate::base::logic::bit::{I, O};
+    use crate::base::{dff::Clock, logic::Word};
 
     #[test]
     fn for_rom_load() {
         let clock = Clock::new();
         let mut rom = ROM32K::new();
-        rom.load("src/tests/sample.txt");
+        rom.load("src/base/tests/sample.txt");
 
         assert_eq!(rom.output(&clock, [O; 15]), Word::new([O; 16]));
         assert_eq!(

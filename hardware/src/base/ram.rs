@@ -1,12 +1,10 @@
 #![allow(dead_code)]
-use crate::dff::ClockState::{Tick, Tock};
-use crate::mux16;
-use crate::register::Register;
-use crate::Word;
-use crate::{bit, logic::mux8way16};
-use crate::{bit::I, logic::dmux4way};
-use crate::{bit::O, logic::dmux8way};
-use crate::{dff::Clock, logic::mux4way16};
+use crate::base::logic::dmux4way;
+use crate::base::logic::dmux8way;
+use crate::base::logic::Word;
+use crate::base::logic::{bit, mux8way16};
+use crate::base::register::Register;
+use crate::base::{dff::Clock, logic::mux4way16};
 
 #[derive(Debug, Clone, Copy)]
 pub struct RAM8 {
@@ -243,7 +241,7 @@ impl RAM16K {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::bit::{I, O};
+    use crate::base::logic::bit::{I, O};
 
     #[test]
     fn for_ram8() {

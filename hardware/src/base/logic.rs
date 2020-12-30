@@ -1,7 +1,6 @@
 #![allow(dead_code, non_camel_case_types)]
-use fmt::write;
 
-use crate::bit::{I, O};
+use crate::base::logic::bit::{I, O};
 use core::panic;
 use std::{
     fmt::{self, Formatter},
@@ -319,10 +318,10 @@ mod tests {
         bit::{I, O},
         or8way,
     };
-    use crate::mux2;
-    use crate::mux3;
-    use crate::mux4way16;
-    use crate::mux8way16;
+    use crate::base::logic::mux2;
+    use crate::base::logic::mux3;
+    use crate::base::logic::mux4way16;
+    use crate::base::logic::mux8way16;
 
     #[test]
     fn for_nand() {

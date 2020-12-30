@@ -1,14 +1,8 @@
 #![allow(dead_code)]
-use crate::dff::ClockState::{Tick, Tock};
-use crate::Word;
-use crate::{
-    dff::Clock,
-    logic::{
-        bit::{I, O},
-        mux,
-    },
-};
-use crate::{dff::Dff, logic::bit};
+use crate::base::dff::ClockState::{Tick, Tock};
+use crate::base::logic::Word;
+use crate::base::{dff::Clock, logic::mux};
+use crate::base::{dff::Dff, logic::bit};
 
 #[derive(Debug, Copy, Clone)]
 pub struct Bit {
@@ -103,6 +97,7 @@ impl Register {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use bit::{I, O};
 
     #[test]
     fn for_bit() {

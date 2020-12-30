@@ -1,17 +1,13 @@
 #![allow(dead_code)]
-use crate::add16;
-use crate::inc16;
-use crate::{bit::I, logic::mux16};
-use crate::{
-    bit::O,
-    logic::{not, or},
-};
-use crate::{
+use crate::base::arithmetic::inc16;
+use crate::base::logic::bit::O;
+use crate::base::{
     dff::Clock,
     dff::ClockState::{Tick, Tock},
     logic::{bit, Word},
     register::Register,
 };
+use crate::base::{logic::bit::I, logic::mux16};
 
 #[derive(Debug, Clone, Copy)]
 pub struct PC {

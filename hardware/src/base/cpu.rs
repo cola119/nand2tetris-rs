@@ -1,9 +1,9 @@
 #![allow(dead_code, non_snake_case)]
-use crate::{
+use crate::base::{
     alu::alu,
     dff::Clock,
     dff::ClockState::{Tick, Tock},
-    logic::bit::{I, O},
+    logic::bit::I,
     logic::{and, bit, mux16, not, or, Word},
     pc::PC,
     register::Register,
@@ -125,8 +125,7 @@ impl CPU {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::io;
-    use std::io::prelude::*;
+    use bit::O;
 
     #[test]
     fn for_cpu() {

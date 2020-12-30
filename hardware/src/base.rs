@@ -1,0 +1,10 @@
+mod alu;
+mod arithmetic;
+mod computer;
+mod cpu;
+mod dff;
+mod logic;
+mod pc;
+mod ram;
+mod register;
+mod screen;

@@ -1,7 +1,7 @@
 #![allow(dead_code)]
-use crate::dff::ClockState::{Tick, Tock};
-use crate::logic::bit;
-use crate::logic::bit::{I, O};
+use crate::base::dff::ClockState::{Tick, Tock};
+use crate::base::logic::bit;
+use crate::base::logic::bit::O;
 
 #[derive(Debug, PartialEq)]
 pub enum ClockState {
@@ -56,6 +56,7 @@ impl Dff {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use bit::{I, O};
 
     #[test]
     fn for_clock() {

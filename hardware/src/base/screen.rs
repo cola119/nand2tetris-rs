@@ -1,9 +1,9 @@
 #![allow(dead_code)]
-use crate::logic::{
+use crate::base::logic::{
     bit::{self, I, O},
     dmux, mux, Word,
 };
-use crate::{dff::Clock, ram::RAM4K};
+use crate::base::{dff::Clock, ram::RAM4K};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Screen {

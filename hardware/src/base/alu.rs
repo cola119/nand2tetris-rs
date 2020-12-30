@@ -1,7 +1,7 @@
 #![allow(dead_code)]
-use crate::arithmetic::*;
-use crate::logic::bit::{I, O};
-use crate::logic::*;
+use crate::base::arithmetic::*;
+use crate::base::logic::bit::O;
+use crate::base::logic::*;
 
 // -> (f(x,y), zr, ng)
 pub fn alu(
@@ -36,6 +36,7 @@ pub fn alu(
 #[cfg(test)]
 mod test {
     use super::*;
+    use bit::I;
 
     #[test]
     fn for_alu() {

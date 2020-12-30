@@ -1,6 +1,6 @@
 #![allow(dead_code)]
-use crate::logic::bit::{I, O};
-use crate::logic::*;
+use crate::base::logic::bit::{I, O};
+use crate::base::logic::*;
 
 pub fn half_adder(a: bit, b: bit) -> [bit; 2] {
     [and(a, b), xor(a, b)]
@@ -50,8 +50,8 @@ pub fn inc16(a: Word) -> Word {
 #[cfg(test)]
 mod tests {
     use super::{add16, full_adder, half_adder, inc, inc16};
-    use crate::logic::bit::{I, O};
-    use crate::Word;
+    use crate::base::logic::bit::{I, O};
+    use crate::base::logic::Word;
 
     #[test]
     fn for_half_adder() {
