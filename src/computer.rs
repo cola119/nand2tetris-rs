@@ -105,9 +105,9 @@ impl ROM32K {
             self.input_to_rams(&clock_t, instruction, address);
         }
         // load=0で仮にinputを呼ぶことでbitのstateをcurrentからprevに移す
-        for i in 0..8 {
-            self.rams[i].input(&clock_t, Word::new([O; 16]), [I; 12], O);
-        }
+        // for i in 0..8 {
+        //     self.rams[i].input(&clock_t, Word::new([O; 16]), [I; 12], O);
+        // }
     }
 }
 
