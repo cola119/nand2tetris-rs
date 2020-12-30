@@ -467,4 +467,100 @@ mod tests {
         assert_eq!(ram64.output(&clock, [O, O, I, O, O, O]), word1);
         assert_eq!(ram64.output(&clock, [O, O, O, O, O, I]), word1);
     }
+
+    #[test]
+    fn for_ram4k() {
+        let zero = Word::new([O; 16]);
+        let mut clock = Clock::new();
+        let mut ram4k = RAM4K::new();
+        let word1 = Word::new([I, O, I, O, I, O, I, O, I, O, I, O, I, O, I, O]);
+
+        ram4k.input(&clock, word1, [O, O, O, O, O, O, O, O, O, O, O, O], I);
+        assert_eq!(
+            ram4k.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O]),
+            zero
+        );
+
+        clock.next();
+        clock.next();
+        ram4k.input(&clock, word1, [O, O, O, O, O, O, O, O, I, O, O, O], I);
+        assert_eq!(
+            ram4k.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O]),
+            word1
+        );
+
+        clock.next();
+        clock.next();
+        ram4k.input(&clock, word1, [O, O, O, O, O, O, O, O, O, O, O, I], O);
+        assert_eq!(
+            ram4k.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O]),
+            word1
+        );
+        assert_eq!(
+            ram4k.output(&clock, [O, O, O, O, O, O, O, O, I, O, O, O]),
+            word1
+        );
+
+        clock.next();
+        clock.next();
+        ram4k.input(&clock, word1, [O, O, O, O, O, O, O, O, O, O, O, I], I);
+        assert_eq!(
+            ram4k.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O]),
+            word1
+        );
+        assert_eq!(
+            ram4k.output(&clock, [O, O, O, O, O, O, O, O, I, O, O, O]),
+            word1
+        );
+        assert_eq!(
+            ram4k.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, I]),
+            zero
+        );
+
+        clock.next();
+        clock.next();
+        ram4k.input(
+            &clock,
+            Word::new([I; 16]),
+            [I, I, I, I, I, I, I, I, I, I, I, I],
+            I,
+        );
+        assert_eq!(
+            ram4k.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O]),
+            word1
+        );
+        assert_eq!(
+            ram4k.output(&clock, [O, O, O, O, O, O, O, O, I, O, O, O]),
+            word1
+        );
+        assert_eq!(
+            ram4k.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, I]),
+            word1
+        );
+
+        clock.next();
+        clock.next();
+        ram4k.input(
+            &clock,
+            Word::new([I; 16]),
+            [I, I, I, I, I, I, I, I, I, I, I, I],
+            I,
+        );
+        assert_eq!(
+            ram4k.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O]),
+            word1
+        );
+        assert_eq!(
+            ram4k.output(&clock, [O, O, O, O, O, O, O, O, I, O, O, O]),
+            word1
+        );
+        assert_eq!(
+            ram4k.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, I]),
+            word1
+        );
+        assert_eq!(
+            ram4k.output(&clock, [I, I, I, I, I, I, I, I, I, I, I, I]),
+            Word::new([I; 16])
+        );
+    }
 }

@@ -9,7 +9,7 @@ pub enum ClockState {
     Tock,
 }
 
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq)]
 pub struct Clock {
     pub state: ClockState,
 }
