@@ -7,7 +7,7 @@
         console.log("open");
       });
       ws.addEventListener("message", (e) => {
-        console.log("message");
+        console.log("message", e);
       });
       ws.addEventListener("error", (e) => {
         console.log("error");

@@ -1,29 +1,41 @@
 #![allow(dead_code)]
-use crate::base::{dff::Clock, ram::RAM4K};
-use crate::{
-    base::logic::{
-        bit::{self, I, O},
-        dmux, mux, Word,
-    },
-    ws_server::server::WsServer,
+use std::net::TcpStream;
+
+use tungstenite::{Message, WebSocket};
+
+use crate::base::logic::{
+    bit::{self, I, O},
+    dmux, mux, Word,
 };
+use crate::base::{dff::Clock, ram::RAM4K};
+
+#[derive(Debug)]
+pub struct ScreenWriter {
+    ws: WebSocket<TcpStream>,
+}
+impl ScreenWriter {
+    pub fn new(socket: WebSocket<TcpStream>) -> Self {
+        Self { ws: socket }
+    }
+    pub fn write_msg(&mut self, msg: String) {
+        self.ws
+            .write_message(Message::from(msg))
+            .expect("couldn't send")
+    }
+}
 
 #[derive(Debug)]
 pub struct Screen {
     rams: [RAM4K; 2],
-    ws_server: WsServer,
+    writer: Option<ScreenWriter>,
 }
 
 impl Screen {
-    pub fn new() -> Self {
+    pub fn new(writer: Option<ScreenWriter>) -> Self {
         Self {
             rams: [RAM4K::new(); 2],
-            ws_server: WsServer::new(),
+            writer,
         }
-    }
-
-    pub fn start_ws(&mut self) {
-        self.ws_server.run();
     }
 
     pub fn input(&mut self, clock_t: &Clock, input: Word, load: bit, address: [bit; 13]) {
@@ -45,7 +57,12 @@ impl Screen {
         self.rams[0].input(clock_t, input, ram_addr, load_bits[0]);
         self.rams[1].input(clock_t, input, ram_addr, load_bits[1]);
         // drawing
-        self.ws_server.write("hoge".to_string());
+        match self.writer {
+            Some(ref mut x) => x.write_msg(input.to_string()),
+            None => {
+                println!("none");
+            }
+        };
     }
 
     pub fn output(&self, clock_t: &Clock, address: [bit; 13]) -> Word {
@@ -107,7 +124,7 @@ mod tests {
     #[test]
     fn for_screen() {
         let mut clock = Clock::new();
-        let mut screen = Screen::new();
+        let mut screen = Screen::new(None);
         let word1 = Word::new([I; 16]);
 
         screen.input(&clock, word1, I, [O, O, O, O, O, O, O, O, O, O, O, O, O]);
