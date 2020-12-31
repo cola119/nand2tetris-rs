@@ -56,9 +56,24 @@ impl Screen {
         let load_bits = dmux(load, address[0]);
         self.rams[0].input(clock_t, input, ram_addr, load_bits[0]);
         self.rams[1].input(clock_t, input, ram_addr, load_bits[1]);
-        // drawing
+
+        self.send_message(input, address);
+    }
+
+    fn send_message(&mut self, input: Word, address: [bit; 13]) {
+        let digit = 13;
+        let register_index = (0..digit).fold(0, |sum, i| {
+            sum + (address[i].to_string().parse::<usize>().unwrap())
+                * 2usize.pow((digit - 1 - i) as u32)
+        });
+        let y = register_index / 32;
+        let x = register_index % 32;
+        let message = format!(
+            "{{\"register_index\":{},\"x\":{},\"y\":{},\"input\":\"{}\"}}",
+            register_index, x, y, input
+        );
         match self.writer {
-            Some(ref mut x) => x.write_msg(input.to_string()),
+            Some(ref mut x) => x.write_msg(message),
             None => {
                 println!("none");
             }

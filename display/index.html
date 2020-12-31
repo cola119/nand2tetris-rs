@@ -1,23 +1,14 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <script>
-      var ws = new WebSocket("ws://127.0.0.1:9001");
-      ws.addEventListener("open", (e) => {
-        console.log("open");
-      });
-      ws.addEventListener("message", (e) => {
-        console.log("message", e);
-      });
-      ws.addEventListener("error", (e) => {
-        console.log("error");
-      });
-      ws.addEventListener("close", (e) => {
-        console.log("close");
-      });
-    </script>
+    <script src="index.js"></script>
+    <style type="text/css">
+      canvas {
+        border: 1px solid whitesmoke;
+      }
+    </style>
   </head>
   <body>
-    hello
+    <canvas id="my_canvas" width="512" height="256"></canvas>
   </body>
 </html>

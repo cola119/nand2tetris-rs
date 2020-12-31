@@ -13,6 +13,15 @@ pub enum bit {
     O,
     I,
 }
+impl fmt::Display for bit {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        let str = match self {
+            O => "0".to_string(),
+            I => "1".to_string(),
+        };
+        write!(f, "{}", str)
+    }
+}
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub struct Word([bit; 16]);

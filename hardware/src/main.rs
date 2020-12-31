@@ -14,13 +14,31 @@ fn start_computer(socket: WebSocket<TcpStream>) {
     let mut clock = Clock::new();
     let writer = ScreenWriter::new(socket);
     let mut screen = Screen::new(Some(writer));
-    let word1 = Word::new([I; 16]);
 
-    screen.input(&clock, word1, I, [O, O, O, O, O, O, O, O, O, O, O, O, O]);
+    screen.input(
+        &clock,
+        Word::new([O, I, O, I, O, I, O, I, O, I, O, I, O, I, O, I]),
+        I,
+        [I, I, I, I, I, I, I, I, I, I, I, I, I],
+    );
     clock.next();
     clock.next();
 
-    screen.input(&clock, word1, I, [O, O, O, O, O, O, O, O, O, O, O, O, O]);
+    screen.input(
+        &clock,
+        Word::new([O, O, O, I, O, I, O, O, O, I, O, I, O, O, O, O]),
+        I,
+        [O, I, I, O, O, O, O, O, O, O, I, O, O],
+    );
+    clock.next();
+    clock.next();
+
+    screen.input(
+        &clock,
+        Word::new([O, O, O, I, I, I, I, I, I, I, I, I, I, O, O, O]),
+        I,
+        [O, O, O, O, O, I, O, O, O, O, O, I, O],
+    );
     clock.next();
     clock.next();
 }
