@@ -1,20 +1,29 @@
 #![allow(dead_code)]
-use crate::base::logic::{
-    bit::{self, I, O},
-    dmux, mux, Word,
-};
 use crate::base::{dff::Clock, ram::RAM4K};
+use crate::{
+    base::logic::{
+        bit::{self, I, O},
+        dmux, mux, Word,
+    },
+    ws_server::server::WsServer,
+};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug)]
 pub struct Screen {
     rams: [RAM4K; 2],
+    ws_server: WsServer,
 }
 
 impl Screen {
     pub fn new() -> Self {
         Self {
             rams: [RAM4K::new(); 2],
+            ws_server: WsServer::new(),
         }
+    }
+
+    pub fn start_ws(&mut self) {
+        self.ws_server.run();
     }
 
     pub fn input(&mut self, clock_t: &Clock, input: Word, load: bit, address: [bit; 13]) {
@@ -36,9 +45,10 @@ impl Screen {
         self.rams[0].input(clock_t, input, ram_addr, load_bits[0]);
         self.rams[1].input(clock_t, input, ram_addr, load_bits[1]);
         // drawing
+        self.ws_server.write("hoge".to_string());
     }
 
-    pub fn output(self, clock_t: &Clock, address: [bit; 13]) -> Word {
+    pub fn output(&self, clock_t: &Clock, address: [bit; 13]) -> Word {
         let ram_addr = [
             address[1],
             address[2],
