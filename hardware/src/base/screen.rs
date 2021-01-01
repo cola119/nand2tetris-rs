@@ -57,7 +57,9 @@ impl Screen {
         self.rams[0].input(clock_t, input, ram_addr, load_bits[0]);
         self.rams[1].input(clock_t, input, ram_addr, load_bits[1]);
 
-        self.send_message(input, address);
+        if load == I {
+            self.send_message(input, address);
+        }
     }
 
     fn send_message(&mut self, input: Word, address: [bit; 13]) {

@@ -159,5 +159,23 @@ mod test {
                 O
             )
         );
+        // f(x,y)=y
+        assert_eq!(
+            alu(
+                Word::new([O, O, O, O, O, O, O, O, O, O, O, I, O, O, O, I]),
+                Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, I, I]),
+                I,
+                I,
+                O,
+                O,
+                O,
+                O
+            ),
+            (
+                Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, I, I]),
+                O,
+                O
+            )
+        );
     }
 }

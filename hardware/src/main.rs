@@ -13,7 +13,7 @@ fn start_computer(socket: WebSocket<TcpStream>) {
 
     let mut computer = Computer::new(Some(writer));
 
-    computer.run("src/program/add.txt", false);
+    computer.run("src/program/rect.txt", false);
 }
 
 fn main() {
