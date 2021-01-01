@@ -1,11 +1,11 @@
 #![allow(dead_code)]
 use crate::base::{
-    computer::ROM32K,
     cpu::CPU,
     dff::Clock,
     logic::bit::{I, O},
     logic::{and, bit, mux4way16, not, Word},
     ram::RAM16K,
+    rom::ROM32K,
     screen::{Screen, ScreenWriter},
 };
 
