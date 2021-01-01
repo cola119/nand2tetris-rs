@@ -79,10 +79,14 @@ impl ROM32K {
         )
     }
 
-    pub fn load(&mut self, filename: &str) {
+    // returns an initial instruction
+    pub fn load(&mut self, filename: &str) -> Word {
         let clock_t = Clock::new();
         let file = File::open(filename).expect(&format!("Fail to open {}", filename));
-        for line_result in BufReader::new(file).lines() {
+
+        let mut lines = BufReader::new(file).lines();
+        let initial_line = lines.nth(0);
+        for line_result in lines {
             let line: &str = &line_result.expect("couldn't read lines");
             let instruction = Word::from(line);
             let address = [
@@ -104,6 +108,7 @@ impl ROM32K {
             ];
             self.input_to_rams(&clock_t, instruction, address);
         }
+        Word::from(&initial_line.unwrap().unwrap() as &str)
         // load=0で仮にinputを呼ぶことでbitのstateをcurrentからprevに移す
         // for i in 0..8 {
         //     self.rams[i].input(&clock_t, Word::new([O; 16]), [I; 12], O);
