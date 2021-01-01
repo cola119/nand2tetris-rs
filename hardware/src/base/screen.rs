@@ -38,7 +38,7 @@ impl Screen {
         }
     }
 
-    pub fn input(&mut self, clock_t: &Clock, input: Word, load: bit, address: [bit; 13]) {
+    pub fn input(&mut self, clock_t: &Clock, input: Word, address: [bit; 13], load: bit) {
         let ram_addr = [
             address[1],
             address[2],
@@ -142,17 +142,17 @@ mod tests {
         let mut screen = Screen::new(None);
         let word1 = Word::new([I; 16]);
 
-        screen.input(&clock, word1, I, [O, O, O, O, O, O, O, O, O, O, O, O, O]);
+        screen.input(&clock, word1, [O, O, O, O, O, O, O, O, O, O, O, O, O], I);
         clock.next();
         clock.next();
-        screen.input(&clock, word1, I, [O, O, O, O, O, O, O, O, O, O, O, O, I]);
+        screen.input(&clock, word1, [O, O, O, O, O, O, O, O, O, O, O, O, I], I);
         assert_eq!(
             screen.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O]),
             word1
         );
         clock.next();
         clock.next();
-        screen.input(&clock, word1, O, [O, O, O, O, O, O, O, O, O, O, O, I, O]);
+        screen.input(&clock, word1, [O, O, O, O, O, O, O, O, O, O, O, I, O], O);
         assert_eq!(
             screen.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O]),
             word1
@@ -163,7 +163,7 @@ mod tests {
         );
         clock.next();
         clock.next();
-        screen.input(&clock, word1, O, [O, O, O, O, O, O, O, O, O, O, O, I, O]);
+        screen.input(&clock, word1, [O, O, O, O, O, O, O, O, O, O, O, I, O], O);
         assert_eq!(
             screen.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O]),
             word1
