@@ -1,46 +1,19 @@
 mod base;
+mod computer;
+mod util;
 
-use base::screen::Screen;
-use base::{dff::Clock, logic::Word};
-use base::{
-    logic::bit::{I, O},
-    screen::ScreenWriter,
-};
+use base::screen::ScreenWriter;
+use computer::Computer;
 use std::net::{TcpListener, TcpStream};
 use tungstenite::{server::accept, WebSocket};
 
 fn start_computer(socket: WebSocket<TcpStream>) {
     println!("start_computer");
-    let mut clock = Clock::new();
     let writer = ScreenWriter::new(socket);
-    let mut screen = Screen::new(Some(writer));
 
-    screen.input(
-        &clock,
-        Word::new([O, I, O, I, O, I, O, I, O, I, O, I, O, I, O, I]),
-        I,
-        [I, I, I, I, I, I, I, I, I, I, I, I, I],
-    );
-    clock.next();
-    clock.next();
+    let mut computer = Computer::new(Some(writer));
 
-    screen.input(
-        &clock,
-        Word::new([O, O, O, I, O, I, O, O, O, I, O, I, O, O, O, O]),
-        I,
-        [O, I, I, O, O, O, O, O, O, O, I, O, O],
-    );
-    clock.next();
-    clock.next();
-
-    screen.input(
-        &clock,
-        Word::new([O, O, O, I, I, I, I, I, I, I, I, I, I, O, O, O]),
-        I,
-        [O, O, O, O, O, I, O, O, O, O, O, I, O],
-    );
-    clock.next();
-    clock.next();
+    computer.run("src/program/add.txt", false);
 }
 
 fn main() {
