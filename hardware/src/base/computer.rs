@@ -6,10 +6,12 @@ use std::{
 
 use crate::base::{
     dff::Clock,
-    logic::bit::I,
+    logic::bit::{I, O},
     logic::{bit, dmux8way, mux8way16, Word},
     ram::RAM4K,
 };
+
+use super::arithmetic::add16;
 
 pub struct ROM32K {
     rams: [RAM4K; 8],
@@ -79,40 +81,41 @@ impl ROM32K {
         )
     }
 
-    // returns an initial instruction
-    pub fn load(&mut self, filename: &str) -> Word {
+    pub fn load(&mut self, filename: &str) {
         let clock_t = Clock::new();
         let file = File::open(filename).expect(&format!("Fail to open {}", filename));
 
-        let mut lines = BufReader::new(file).lines();
-        let initial_line = lines.nth(0);
-        for line_result in lines {
+        let mut line_counter = Word::new([O; 16]);
+        for line_result in BufReader::new(file).lines() {
             let line: &str = &line_result.expect("couldn't read lines");
             let instruction = Word::from(line);
             let address = [
-                instruction[1],
-                instruction[2],
-                instruction[3],
-                instruction[4],
-                instruction[5],
-                instruction[6],
-                instruction[7],
-                instruction[8],
-                instruction[9],
-                instruction[10],
-                instruction[11],
-                instruction[12],
-                instruction[13],
-                instruction[14],
-                instruction[15],
+                line_counter[1],
+                line_counter[2],
+                line_counter[3],
+                line_counter[4],
+                line_counter[5],
+                line_counter[6],
+                line_counter[7],
+                line_counter[8],
+                line_counter[9],
+                line_counter[10],
+                line_counter[11],
+                line_counter[12],
+                line_counter[13],
+                line_counter[14],
+                line_counter[15],
             ];
             self.input_to_rams(&clock_t, instruction, address);
+            line_counter = add16(
+                line_counter,
+                Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, I]),
+            )
         }
-        Word::from(&initial_line.unwrap().unwrap() as &str)
         // load=0で仮にinputを呼ぶことでbitのstateをcurrentからprevに移す
-        // for i in 0..8 {
-        //     self.rams[i].input(&clock_t, Word::new([O; 16]), [I; 12], O);
-        // }
+        for i in 0..8 {
+            self.rams[i].input(&clock_t, Word::new([O; 16]), [I; 12], O);
+        }
     }
 }
 
@@ -134,40 +137,32 @@ mod tests {
             Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, I])
         );
         assert_eq!(
-            rom.output(&clock, [O, O, O, O, O, O, O, O, O, O, I, O, O, O, I]),
+            rom.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, I, O]), // 3行目
             Word::new([O, O, O, O, O, O, O, O, O, O, O, I, O, O, O, I])
         );
         assert_eq!(
-            rom.output(&clock, [O, O, O, O, I, I, I, I, I, I, I, I, I, I, I]),
+            rom.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, I, I]),
             Word::new([O, O, O, O, O, I, I, I, I, I, I, I, I, I, I, I])
         );
         assert_eq!(
-            // 000,111111111111 => register[0][2047]
-            rom.output(&clock, [O, O, O, I, I, I, I, I, I, I, I, I, I, I, I]),
+            rom.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, I, O, O]),
             Word::new([O, O, O, O, I, I, I, I, I, I, I, I, I, I, I, I])
         );
         assert_eq!(
-            // 001,111111111111 => register[1][2047]
-            rom.output(&clock, [O, O, I, I, I, I, I, I, I, I, I, I, I, I, I]),
+            rom.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, I, O, I]),
             Word::new([O, O, O, I, I, I, I, I, I, I, I, I, I, I, I, I])
         );
         assert_eq!(
-            // 011,111111111111 => register[3][2047]
-            rom.output(&clock, [O, I, I, I, I, I, I, I, I, I, I, I, I, I, I]),
+            rom.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, I, I, O]),
             Word::new([O, O, I, I, I, I, I, I, I, I, I, I, I, I, I, I])
         );
         assert_eq!(
-            // instruction => 0,111111111111111
-            // 1,111,11111111111 => register[7][2047]
-            rom.output(&clock, [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I]),
+            rom.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, I, I, I]),
             Word::new([O, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I])
         );
         assert_eq!(
-            // instruction => 1,111111111111111
-            // 1,111,11111111111 => register[7][2047]
-            rom.output(&clock, [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I]),
-            // instruction => 0,111111111111111と同じ
-            Word::new([O, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I])
+            rom.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, I, O, O, O]),
+            Word::new([I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I])
         );
     }
 }
