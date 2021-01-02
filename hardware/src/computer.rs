@@ -164,7 +164,7 @@ impl Computer {
         instruction_num: Word,
         is_last: Word,
     ) {
-        let mut clock = Clock::new();
+        let clock = Clock::new();
 
         // CPU
         if self.debug {
@@ -192,10 +192,6 @@ impl Computer {
                 out_m, address_m, write_m
             );
         }
-
-        // next generation
-        clock.next();
-        clock.next();
 
         let in_m = self.memory.output(&clock, address_m);
         if self.debug {
@@ -257,7 +253,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn for_computer() {
+    fn for_computer_max() {
         let mut computer = Computer::new(None, false);
         computer.run("src/program/max.txt", false);
         let r0 = computer.memory_out([O, O, O, O, O, O, O, O, O, O, O, O, O, I, O]);
@@ -265,7 +261,7 @@ mod tests {
     }
 
     #[test]
-    fn for_computer2() {
+    fn for_computer_max2() {
         let mut computer = Computer::new(None, false);
         computer.run("src/program/max2.txt", false);
         let r0 = computer.memory_out([O, O, O, O, O, O, O, O, O, O, O, O, O, I, O]);
