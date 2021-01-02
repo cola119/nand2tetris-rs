@@ -2,6 +2,7 @@ mod base;
 mod computer;
 mod util;
 
+use base::logic::bit::O;
 use base::screen::ScreenWriter;
 use computer::Computer;
 use std::net::{TcpListener, TcpStream};
@@ -14,6 +15,11 @@ fn start_computer(socket: WebSocket<TcpStream>) {
     let mut computer = Computer::new(Some(writer), false);
 
     computer.run("src/program/rect.txt", false);
+
+    println!(
+        "{}",
+        computer.memory_out([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O])
+    );
 
     println!("done");
 }

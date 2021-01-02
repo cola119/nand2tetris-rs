@@ -135,7 +135,9 @@ impl Computer {
     }
 
     pub fn memory_out(self, address: [bit; 15]) -> Word {
-        self.memory.output(&Clock::new(), address)
+        let mut clock = Clock::new();
+        clock.next();
+        self.memory.output(&clock, address)
     }
 
     pub fn run(&mut self, filename: &str, reset: bool) {
@@ -145,10 +147,23 @@ impl Computer {
             false => O,
         };
         let initial = self.rom.output(&Clock::new(), [O; 15]);
-        self.execute(initial, Word::new([O; 16]), reset_bit, instruction_num);
+        self.execute(
+            initial,
+            Word::new([O; 16]),
+            reset_bit,
+            instruction_num,
+            Word::new([O; 16]),
+        );
     }
 
-    fn execute(&mut self, instruction: Word, in_m: Word, reset: bit, instruction_num: Word) {
+    fn execute(
+        &mut self,
+        instruction: Word,
+        in_m: Word,
+        reset: bit,
+        instruction_num: Word,
+        is_last: Word,
+    ) {
         let mut clock = Clock::new();
 
         // CPU
@@ -195,10 +210,16 @@ impl Computer {
         }
 
         // 終了判定
-        let is_last_instruction = Computer::is_last(instruction_num, pc);
-        if is_last_instruction != Word::new([I; 16]) {
-            self.execute(next_instruction, in_m, O, instruction_num)
+        if is_last == Word::new([I; 16]) {
+            return;
         }
+        self.execute(
+            next_instruction,
+            in_m,
+            O,
+            instruction_num,
+            Computer::is_last(instruction_num, pc),
+        )
     }
 
     fn is_last(instruction_num: Word, pc: [bit; 15]) -> Word {
@@ -249,5 +270,13 @@ mod tests {
         computer.run("src/program/max2.txt", false);
         let r0 = computer.memory_out([O, O, O, O, O, O, O, O, O, O, O, O, O, I, O]);
         assert_eq!(r0, Word::from("0000000011000011"));
+    }
+
+    #[test]
+    fn for_computer_add() {
+        let mut computer = Computer::new(None, false);
+        computer.run("src/program/add.txt", false);
+        let r0 = computer.memory_out([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]);
+        assert_eq!(r0, Word::from("0000000000000101"));
     }
 }
