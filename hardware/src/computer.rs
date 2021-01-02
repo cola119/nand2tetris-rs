@@ -136,7 +136,8 @@ impl Computer {
             true => I,
             false => O,
         };
-        self.execute(Word::new([O; 16]), Word::new([O; 16]), reset_bit);
+        let initial = self.rom.output(&Clock::new(), [O; 15]);
+        self.execute(initial, Word::new([O; 16]), reset_bit);
     }
 
     fn execute(&mut self, instruction: Word, in_m: Word, reset: bit) {
