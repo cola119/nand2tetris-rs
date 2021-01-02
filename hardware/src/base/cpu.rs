@@ -42,7 +42,7 @@ impl CPU {
         };
         let current_a_value = self.a_register.output(&clock_t_1);
         let current_d_value = self.d_register.output(&clock_t_1);
-        println!("d_reg: {}, a_reg: {}", current_d_value, current_a_value);
+        // println!("d_reg: {}, a_reg: {}", current_d_value, current_a_value);
         let (i, a, cccccc, ddd, jjj) = CPU::decode(instruction);
 
         let (alu, zr, ng) = alu(

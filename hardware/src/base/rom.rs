@@ -81,7 +81,8 @@ impl ROM32K {
         )
     }
 
-    pub fn load(&mut self, filename: &str) {
+    // return last address
+    pub fn load(&mut self, filename: &str) -> Word {
         let clock_t = Clock::new();
         let file = File::open(filename).expect(&format!("Fail to open {}", filename));
 
@@ -116,6 +117,7 @@ impl ROM32K {
         for i in 0..8 {
             self.rams[i].input(&clock_t, Word::new([O; 16]), [I; 12], O);
         }
+        line_counter
     }
 }
 

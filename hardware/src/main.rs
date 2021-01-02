@@ -11,9 +11,11 @@ fn start_computer(socket: WebSocket<TcpStream>) {
     println!("start_computer");
     let writer = ScreenWriter::new(socket);
 
-    let mut computer = Computer::new(Some(writer));
+    let mut computer = Computer::new(Some(writer), false);
 
     computer.run("src/program/rect.txt", false);
+
+    println!("done");
 }
 
 fn main() {
