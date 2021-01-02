@@ -42,6 +42,7 @@ impl CPU {
         };
         let current_a_value = self.a_register.output(&clock_t_1);
         let current_d_value = self.d_register.output(&clock_t_1);
+        println!("d_reg: {}, a_reg: {}", current_d_value, current_a_value);
         let (i, a, cccccc, ddd, jjj) = CPU::decode(instruction);
 
         let (alu, zr, ng) = alu(
@@ -61,52 +62,56 @@ impl CPU {
             or(/* A命令 */ not(i), /* C命令 */ ddd[0]),
         );
 
-        self.d_register.input(clock_t, alu, ddd[1]);
+        self.d_register.input(clock_t, alu, and(ddd[1], i));
 
         let is_jump = or(
             or(and(jjj[0], ng), and(jjj[1], zr)),
             and(jjj[2], not(or(zr, ng))),
         );
-        let pc_result = self
-            .pc
+        self.pc
             .run(clock_t, current_a_value, I, and(is_jump, i), reset);
+
+        // clock_t_1 = clock_t_+1
+        // この２つは更新後の値を使う
+        let next_a_value = self.a_register.output(&clock_t_1);
+        let next_pc_value = self.pc.output(&clock_t_1);
 
         (
             alu,
             and(i, ddd[2]),
             [
-                current_a_value[1],
-                current_a_value[2],
-                current_a_value[3],
-                current_a_value[4],
-                current_a_value[5],
-                current_a_value[6],
-                current_a_value[7],
-                current_a_value[8],
-                current_a_value[9],
-                current_a_value[10],
-                current_a_value[11],
-                current_a_value[12],
-                current_a_value[13],
-                current_a_value[14],
-                current_a_value[15],
+                next_a_value[1],
+                next_a_value[2],
+                next_a_value[3],
+                next_a_value[4],
+                next_a_value[5],
+                next_a_value[6],
+                next_a_value[7],
+                next_a_value[8],
+                next_a_value[9],
+                next_a_value[10],
+                next_a_value[11],
+                next_a_value[12],
+                next_a_value[13],
+                next_a_value[14],
+                next_a_value[15],
             ],
             [
-                pc_result[1],
-                pc_result[2],
-                pc_result[3],
-                pc_result[4],
-                pc_result[5],
-                pc_result[6],
-                pc_result[7],
-                pc_result[8],
-                pc_result[9],
-                pc_result[10],
-                pc_result[11],
-                pc_result[12],
-                pc_result[13],
-                pc_result[14],
-                pc_result[15],
+                next_pc_value[1],
+                next_pc_value[2],
+                next_pc_value[3],
+                next_pc_value[4],
+                next_pc_value[5],
+                next_pc_value[6],
+                next_pc_value[7],
+                next_pc_value[8],
+                next_pc_value[9],
+                next_pc_value[10],
+                next_pc_value[11],
+                next_pc_value[12],
+                next_pc_value[13],
+                next_pc_value[14],
+                next_pc_value[15],
             ],
         )
     }

@@ -30,6 +30,11 @@ pub fn alu(
         ]),
     ));
     let ng = out2[0];
+    println!(
+        "x: {}, y: {}, zx: {}, nx: {}, zy: {}, nx: {}, f: {}, no: {}",
+        x, y, zx, nx, zy, ny, f, no
+    );
+    println!("f(x,y): {}, zr: {}, ng: {}", out2, zr, ng);
     (out2, zr, ng)
 }
 

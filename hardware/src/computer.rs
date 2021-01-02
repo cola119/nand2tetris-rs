@@ -132,13 +132,11 @@ impl Computer {
 
     pub fn run(&mut self, filename: &str, reset: bool) {
         self.rom.load(&filename);
-        let initial = self.rom.output(&Clock::new(), [O; 15]);
-
         let reset_bit = match reset {
             true => I,
             false => O,
         };
-        self.execute(initial, Word::new([O; 16]), reset_bit);
+        self.execute(Word::new([O; 16]), Word::new([O; 16]), reset_bit);
     }
 
     fn execute(&mut self, instruction: Word, in_m: Word, reset: bit) {
@@ -160,16 +158,29 @@ impl Computer {
 
         // Memory
         self.memory.input(&clock, out_m, address_m, write_m);
-        let in_m = self.memory.output(&clock, address_m);
+        println!(
+            "memory.input(input: {}, addr: {:?}, load: {})",
+            out_m, address_m, write_m
+        );
 
         // next generation
         clock.next();
         clock.next();
 
+        let in_m = self.memory.output(&clock, address_m);
+        println!("{} = memory.output(addr: {:?})", in_m, address_m);
+
         // ROM
         let next_instruction = self.rom.output(&clock, pc);
 
         println!("");
+        //0000000000000010
+        let r2 = self
+            .memory
+            .output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, I, O]);
+        println!("r2 {}", r2);
+        println!("");
+
         self.execute(next_instruction, in_m, O);
     }
 }
