@@ -150,30 +150,13 @@ mod tests {
         );
         assert_eq!(outM, word0);
         assert_eq!(writeM, O);
-        assert_eq!(addressM, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]);
-        assert_eq!(pc, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]);
+        assert_eq!(addressM, [O, I, I, O, O, O, O, O, O, I, I, I, O, O, I]); // A命令なのでAレジスタにセットした値が返る
+        assert_eq!(pc, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, I]); // PCは１つ上がる
 
         clock.next();
-
-        // CLOCK: TOCK
-        let (outM, writeM, addressM, pc) = cpu.run(
-            &clock,
-            word0,
-            Word::new([O, O, I, I, O, O, O, O, O, O, I, I, I, O, O, I]),
-            O,
-        );
-        assert_eq!(outM, word0);
-        assert_eq!(writeM, O);
-        assert_eq!(addressM, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]);
-        assert_eq!(pc, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, I]);
-        assert_eq!(
-            cpu.a_register.output(&clock),
-            Word::new([O, O, I, I, O, O, O, O, O, O, I, I, I, O, O, I])
-        );
-
         clock.next();
 
-        // CLOCK: TICK
+        // // CLOCK: TICK
         let (outM, writeM, addressM, pc) = cpu.run(
             &clock,
             word0,
@@ -187,32 +170,16 @@ mod tests {
         );
         assert_eq!(writeM, O);
         assert_eq!(addressM, [O, I, I, O, O, O, O, O, O, I, I, I, O, O, I]);
-        assert_eq!(pc, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, I]);
+        assert_eq!(pc, [O, O, O, O, O, O, O, O, O, O, O, O, O, I, O]);
         assert_eq!(
             cpu.a_register.output(&clock),
             Word::new([O, O, I, I, O, O, O, O, O, O, I, I, I, O, O, I])
         );
 
         clock.next();
-
-        // CLOCK: TOCK
-        let (outM, writeM, addressM, pc) = cpu.run(
-            &clock,
-            word0,
-            Word::new([I, I, I, O, I, I, O, O, O, O, O, I, O, O, O, O]),
-            O,
-        );
-        assert_eq!(
-            outM,
-            Word::new([O, O, I, I, O, O, O, O, O, O, I, I, I, O, O, I])
-        );
-        assert_eq!(writeM, O);
-        assert_eq!(addressM, [O, I, I, O, O, O, O, O, O, I, I, I, O, O, I]); // 12345
-        assert_eq!(pc, [O, O, O, O, O, O, O, O, O, O, O, O, O, I, O]);
-
         clock.next();
 
-        // CLOCK: TICK
+        // // CLOCK: TICK
         let (outM, writeM, addressM, pc) = cpu.run(
             &clock,
             word0,
@@ -226,29 +193,13 @@ mod tests {
         );
         assert_eq!(writeM, O);
         assert_eq!(addressM, [O, I, I, O, O, O, O, O, O, I, I, I, O, O, I]);
-        assert_eq!(pc, [O, O, O, O, O, O, O, O, O, O, O, O, O, I, O]);
+        assert_eq!(pc, [O, O, O, O, O, O, O, O, O, O, O, O, O, I, I]);
         assert_eq!(
             cpu.a_register.output(&clock),
             Word::new([O, O, I, I, O, O, O, O, O, O, I, I, I, O, O, I])
         );
 
         clock.next();
-
-        // CLOCK: TOCK
-        let (outM, writeM, addressM, pc) = cpu.run(
-            &clock,
-            word0,
-            Word::new([I, I, I, O, I, I, O, O, O, O, O, I, O, O, O, O]),
-            O,
-        );
-        assert_eq!(
-            outM,
-            Word::new([O, O, I, I, O, O, O, O, O, O, I, I, I, O, O, I])
-        );
-        assert_eq!(writeM, O);
-        assert_eq!(addressM, [O, I, I, O, O, O, O, O, O, I, I, I, O, O, I]); // 12345
-        assert_eq!(pc, [O, O, O, O, O, O, O, O, O, O, O, O, O, I, I]);
-
         clock.next();
 
         // CLOCK: TICK
@@ -267,71 +218,34 @@ mod tests {
         );
         assert_eq!(writeM, O);
         assert_eq!(addressM, [O, I, I, O, O, O, O, O, O, I, I, I, O, O, I]);
-        assert_eq!(pc, [O, O, O, O, O, O, O, O, O, O, O, O, O, I, I]);
+        assert_eq!(pc, [O, O, O, O, O, O, O, O, O, O, O, O, I, O, O]);
         assert_eq!(
             cpu.a_register.output(&clock),
             Word::new([O, O, I, I, O, O, O, O, O, O, I, I, I, O, O, I])
         );
 
         clock.next();
+        clock.next();
 
-        // CLOCK: TOCK
+        // CLOCK: TICK
         let (outM, writeM, addressM, pc) = cpu.run(
             &clock,
-            word0,
-            Word::new([I, I, I, O, I, I, O, O, O, O, O, I, O, O, O, O]),
-            O,
+            word1,
+            /* comp: D-M, dest: D -> D=D-M */
+            /* D=12345, M=word1=-1 */
+            Word::new([I, I, I, I, O, I, O, O, I, I, O, I, O, O, O, O]),
+            I,
         );
         assert_eq!(
             outM,
-            Word::new([O, O, I, I, O, O, O, O, O, O, I, I, I, O, O, I])
+            Word::new([O, O, I, I, O, O, O, O, O, O, I, I, I, O, I, I])
         );
         assert_eq!(writeM, O);
         assert_eq!(addressM, [O, I, I, O, O, O, O, O, O, I, I, I, O, O, I]);
-        assert_eq!(pc, [O, O, O, O, O, O, O, O, O, O, O, O, I, O, O]);
-    }
-
-    #[test]
-    fn for_cpu2() {
-        let mut clock = Clock::new();
-        let mut cpu = CPU::new();
-
-        let word0 = Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]);
-
-        // CLOCK: TICK
-        let (outM, writeM, addressM, pc) = cpu.run(
-            &clock,
-            word0,
-            /* A命令 [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O] */
-            Word::from("0000000000000000"),
-            O,
-        );
-        assert_eq!(outM, word0);
-        assert_eq!(writeM, O);
-        assert_eq!(addressM, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]);
-        assert_eq!(pc, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]);
-
-        clock.next();
-        clock.next();
-
-        // CLOCK: TICK
-        let (outM, writeM, addressM, pc) = cpu.run(
-            &clock,
-            word0,
-            /* comp: M, dest: D -> D=M */
-            Word::from("1111110000010000"),
-            O,
-        );
-        assert_eq!(
-            outM,
-            Word::from("0000000000000000"), // D=M=in_M
-        );
-        assert_eq!(writeM, O);
-        assert_eq!(addressM, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]);
-        assert_eq!(pc, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, I]);
+        assert_eq!(pc, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]); // reset
         assert_eq!(
             cpu.a_register.output(&clock),
-            Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O])
+            Word::new([O, O, I, I, O, O, O, O, O, O, I, I, I, O, O, I])
         );
     }
 }
