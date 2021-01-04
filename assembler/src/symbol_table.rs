@@ -1,9 +1,10 @@
 #![allow(dead_code)]
 use std::collections::HashMap;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SymbolTable {
     table: HashMap<String, String>,
+    last_address: i32,
 }
 
 impl SymbolTable {
@@ -32,7 +33,11 @@ impl SymbolTable {
         table.insert("R15".to_string(), "000000000001111".to_string());
         table.insert("SCREEN".to_string(), "100000000000000".to_string());
         table.insert("KBD".to_string(), "110000000000000".to_string());
-        Self { table }
+
+        Self {
+            table,
+            last_address: 15,
+        }
     }
 
     pub fn add_entry(&mut self, symbol: &str, address: &str) {
@@ -45,6 +50,12 @@ impl SymbolTable {
 
     pub fn get_address(&self, symbol: &str) -> Option<&str> {
         self.table.get(symbol).map(|s| -> &str { s })
+    }
+
+    pub fn insert_variable_symbol(&mut self, symbol: &str) {
+        let new_addr = &format!("{:015b}", self.last_address + 1);
+        self.add_entry(symbol, new_addr);
+        self.last_address += 1;
     }
 }
 

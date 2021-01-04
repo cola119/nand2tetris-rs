@@ -59,6 +59,7 @@ impl HackToken {
 #[derive(Debug)]
 pub struct ParseResult {
     tokens: Vec<HackToken>,
+    symbol_table: SymbolTable,
 }
 
 impl fmt::Display for ParseResult {
@@ -74,7 +75,18 @@ impl fmt::Display for ParseResult {
                         token.dest.as_ref().unwrap(),
                         token.jump.as_ref().unwrap()
                     ),
-                    ACommand | LCommand => format!("0{}", token.symbol.as_ref().unwrap(),),
+                    ACommand | LCommand => {
+                        let symbol = token.symbol.as_ref().unwrap();
+                        if symbol.starts_with("0") || symbol.starts_with("1") {
+                            format!("0{}", symbol)
+                        } else {
+                            let addr = self
+                                .symbol_table
+                                .get_address(&symbol)
+                                .expect(&format!("couldn't find address of symbol: {}", symbol));
+                            format!("0{}", addr)
+                        }
+                    }
                 };
                 if acc == "" {
                     return format!("{}", binary_str);
@@ -106,6 +118,7 @@ impl Parser {
 
     pub fn run(&mut self, filename: &str) -> ParseResult {
         self.load(filename);
+        self.init_symbol_table();
 
         let mut tokens: Vec<HackToken> = Vec::new();
 
@@ -130,7 +143,10 @@ impl Parser {
             }
         }
 
-        ParseResult { tokens }
+        ParseResult {
+            tokens,
+            symbol_table: self.symbol_table.clone(),
+        }
     }
 
     fn load(&mut self, filename: &str) {
@@ -139,6 +155,28 @@ impl Parser {
             .lines()
             .map(|line| -> String { line.unwrap().to_string() })
             .collect()
+    }
+
+    fn init_symbol_table(&mut self) {
+        let mut line_count = 0;
+        while self.has_more_commands() {
+            self.advance();
+            if self.command == None {
+                continue;
+            }
+            match self.command_type() {
+                ACommand | CCommand => {
+                    line_count += 1;
+                }
+                LCommand => {
+                    let symbol = &self.symbol();
+                    let address = &format!("{:015b}", line_count + 1);
+                    self.symbol_table.add_entry(symbol, address);
+                }
+            }
+        }
+        self.index = 0;
+        self.command = None;
     }
 
     fn has_more_commands(&self) -> bool {
@@ -172,10 +210,22 @@ impl Parser {
         panic!(format!("unknown command: {}", str));
     }
 
-    fn symbol(&self) -> String {
+    fn symbol(&mut self) -> String {
         let cmd = self.command.as_ref().unwrap();
         if cmd.starts_with("@") {
-            return cmd.split("@").nth(1).unwrap().to_string();
+            let symbol = cmd.split("@").nth(1).unwrap().to_string();
+            if let Ok(symbol_num) = symbol.parse::<i32>() {
+                // @30
+                println!("{}", symbol_num);
+                return format!("{:015b}", symbol_num);
+            }
+            // @LOOP
+            let addr_or_not = self.symbol_table.get_address(&symbol);
+            if addr_or_not == None {
+                // 変数として割当
+                self.symbol_table.insert_variable_symbol(&symbol);
+            }
+            return symbol;
         } else if cmd.starts_with("(") {
             return cmd
                 .split("(")
@@ -225,10 +275,10 @@ mod tests {
     #[test]
     fn for_parser1() {
         let mut parser = Parser::new();
-        let result = parser.run("src/tests/parser/no_symbol.asm");
+        let result = parser.run("src/programs/Add.asm");
         assert_eq!(
             result.to_string(),
-            "1111110000010000\n1110101010000001\n010"
+           "0000000000000010\n1110110000010000\n0000000000000011\n1110000010010000\n0000000000000000\n1110001100001000"
         )
     }
 }
