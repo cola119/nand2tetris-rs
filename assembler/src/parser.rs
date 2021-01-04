@@ -8,7 +8,10 @@ use std::{
 };
 use CommandType::{ACommand, CCommand, LCommand};
 
-use crate::code::{comp_map, dest_map, jump_map};
+use crate::{
+    code::{comp_map, dest_map, jump_map},
+    symbol_table::SymbolTable,
+};
 
 #[derive(Debug)]
 pub enum CommandType {
@@ -73,7 +76,11 @@ impl fmt::Display for ParseResult {
                     ),
                     ACommand | LCommand => format!("0{}", token.symbol.as_ref().unwrap(),),
                 };
-                format!("{}\n{}", acc, binary_str)
+                if acc == "" {
+                    return format!("{}", binary_str);
+                } else {
+                    return format!("{}\n{}", acc, binary_str);
+                }
             });
         write!(f, "{}", str)
     }
@@ -84,6 +91,7 @@ pub struct Parser {
     lines: Vec<String>,
     index: usize,
     command: Option<String>,
+    symbol_table: SymbolTable,
 }
 
 impl Parser {
@@ -92,6 +100,7 @@ impl Parser {
             lines: Vec::new(),
             index: 0,
             command: None,
+            symbol_table: SymbolTable::new(),
         }
     }
 
@@ -129,16 +138,15 @@ impl Parser {
         self.lines = BufReader::new(file)
             .lines()
             .map(|line| -> String { line.unwrap().to_string() })
-            .collect();
-        self.lines.reverse();
+            .collect()
     }
 
     fn has_more_commands(&self) -> bool {
-        self.lines.len() > 0
+        self.lines.len() > self.index
     }
 
     fn advance(&mut self) {
-        let cmd = self.lines.pop();
+        let cmd = self.lines.get(self.index);
         self.command = cmd.map_or(None, |str| {
             let trmed = str.trim();
             if trmed.starts_with("//") || trmed == "" {
@@ -148,7 +156,8 @@ impl Parser {
                 .split("//")
                 .nth(0)
                 .map(|s| -> String { s.trim().to_string() })
-        })
+        });
+        self.index += 1;
     }
 
     fn command_type(&self) -> CommandType {
@@ -217,6 +226,9 @@ mod tests {
     fn for_parser1() {
         let mut parser = Parser::new();
         let result = parser.run("src/tests/parser/no_symbol.asm");
-        println!("{}", result);
+        assert_eq!(
+            result.to_string(),
+            "1111110000010000\n1110101010000001\n010"
+        )
     }
 }
