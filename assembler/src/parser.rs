@@ -1,5 +1,11 @@
 #![allow(dead_code)]
-use std::{fs::File, io::BufRead, io::BufReader};
+use std::{
+    fmt::{self, Formatter},
+    fs::File,
+    io::BufRead,
+    io::BufReader,
+    write,
+};
 use CommandType::{ACommand, CCommand, LCommand};
 
 use crate::code::{comp_map, dest_map, jump_map};
@@ -12,7 +18,7 @@ pub enum CommandType {
 }
 
 #[derive(Debug)]
-pub struct ParseResult {
+pub struct HackToken {
     ctype: CommandType,
     symbol: Option<String>,
     dest: Option<String>,
@@ -20,7 +26,7 @@ pub struct ParseResult {
     jump: Option<String>,
 }
 
-impl ParseResult {
+impl HackToken {
     pub fn c_cmd(
         ctype: CommandType,
         dest: Option<String>,
@@ -48,6 +54,32 @@ impl ParseResult {
 }
 
 #[derive(Debug)]
+pub struct ParseResult {
+    tokens: Vec<HackToken>,
+}
+
+impl fmt::Display for ParseResult {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        let str = self
+            .tokens
+            .iter()
+            .fold("".to_string(), |acc, token| -> String {
+                let binary_str = match token.ctype {
+                    CCommand => format!(
+                        "111{}{}{}",
+                        token.comp.as_ref().unwrap(),
+                        token.dest.as_ref().unwrap(),
+                        token.jump.as_ref().unwrap()
+                    ),
+                    ACommand | LCommand => format!("0{}", token.symbol.as_ref().unwrap(),),
+                };
+                format!("{}\n{}", acc, binary_str)
+            });
+        write!(f, "{}", str)
+    }
+}
+
+#[derive(Debug)]
 pub struct Parser {
     lines: Vec<String>,
     index: usize,
@@ -63,10 +95,10 @@ impl Parser {
         }
     }
 
-    pub fn run(&mut self, filename: &str) -> Vec<ParseResult> {
+    pub fn run(&mut self, filename: &str) -> ParseResult {
         self.load(filename);
 
-        let mut result: Vec<ParseResult> = Vec::new();
+        let mut tokens: Vec<HackToken> = Vec::new();
 
         while self.has_more_commands() {
             self.advance();
@@ -76,10 +108,10 @@ impl Parser {
             let ctype = self.command_type();
             match ctype {
                 ACommand | LCommand => {
-                    result.push(ParseResult::a_or_l_cmd(ctype, self.symbol()));
+                    tokens.push(HackToken::a_or_l_cmd(ctype, self.symbol()));
                 }
                 CCommand => {
-                    result.push(ParseResult::c_cmd(
+                    tokens.push(HackToken::c_cmd(
                         ctype,
                         self.dest(),
                         Some(self.comp()),
@@ -89,7 +121,7 @@ impl Parser {
             }
         }
 
-        result
+        ParseResult { tokens }
     }
 
     fn load(&mut self, filename: &str) {
@@ -120,7 +152,6 @@ impl Parser {
     }
 
     fn command_type(&self) -> CommandType {
-        println!("{:?}", self.command);
         let str = self.command.as_ref().unwrap();
         if str.starts_with("@") {
             return ACommand;
@@ -166,7 +197,7 @@ impl Parser {
             let inst = cmd.split("=").nth(0);
             return Some(dest_map(inst).to_string());
         }
-        None
+        return Some(dest_map(None).to_string());
     }
     fn jump(&self) -> Option<String> {
         let cmd = self.command.as_ref().unwrap();
@@ -174,7 +205,7 @@ impl Parser {
             let inst = cmd.split(";").nth(1);
             return Some(jump_map(inst).to_string());
         }
-        None
+        return Some(jump_map(None).to_string());
     }
 }
 
@@ -185,7 +216,7 @@ mod tests {
     #[test]
     fn for_parser1() {
         let mut parser = Parser::new();
-        let result = parser.run("src/tests/parser/1.asm");
-        println!("{:?}", result);
+        let result = parser.run("src/tests/parser/no_symbol.asm");
+        println!("{}", result);
     }
 }
