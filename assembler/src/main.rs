@@ -1,3 +1,4 @@
+mod code;
 mod parser;
 mod util;
 

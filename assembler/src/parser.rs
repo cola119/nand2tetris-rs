@@ -1,14 +1,18 @@
+#![allow(dead_code)]
 use std::{fs::File, io::BufRead, io::BufReader};
 use CommandType::{ACommand, CCommand, LCommand};
 
+use crate::code::{comp_map, dest_map, jump_map};
+
 #[derive(Debug)]
-enum CommandType {
+pub enum CommandType {
     ACommand,
     CCommand,
     LCommand,
 }
 
-struct ParseResult {
+#[derive(Debug)]
+pub struct ParseResult {
     ctype: CommandType,
     symbol: Option<String>,
     dest: Option<String>,
@@ -17,13 +21,18 @@ struct ParseResult {
 }
 
 impl ParseResult {
-    pub fn c_cmd(ctype: CommandType, dest: String, comp: String, jump: String) -> Self {
+    pub fn c_cmd(
+        ctype: CommandType,
+        dest: Option<String>,
+        comp: Option<String>,
+        jump: Option<String>,
+    ) -> Self {
         Self {
             ctype,
             symbol: None,
-            dest: Some(dest),
-            comp: Some(comp),
-            jump: Some(jump),
+            dest: dest,
+            comp: comp,
+            jump: jump,
         }
     }
 
@@ -38,6 +47,7 @@ impl ParseResult {
     }
 }
 
+#[derive(Debug)]
 pub struct Parser {
     lines: Vec<String>,
     index: usize,
@@ -72,7 +82,7 @@ impl Parser {
                     result.push(ParseResult::c_cmd(
                         ctype,
                         self.dest(),
-                        self.comp(),
+                        Some(self.comp()),
                         self.jump(),
                     ));
                 }
@@ -139,18 +149,32 @@ impl Parser {
         panic!(format!("unknown command: {}", cmd));
     }
 
-    fn dest(&self) -> String {
+    fn comp(&self) -> String {
         let cmd = self.command.as_ref().unwrap();
         if cmd.contains("=") {
-            let inst = cmd.split("=").nth(0).unwrap();
+            let inst = cmd.split("=").nth(1).unwrap();
+            return comp_map(inst).to_string();
+        } else if cmd.contains(";") {
+            let inst = cmd.split(";").nth(0).unwrap();
+            return comp_map(inst).to_string();
         }
-        "".to_string()
+        panic!(format!("unknown command: {}", cmd));
     }
-    fn comp(&self) -> String {
-        "".to_string()
+    fn dest(&self) -> Option<String> {
+        let cmd = self.command.as_ref().unwrap();
+        if cmd.contains("=") {
+            let inst = cmd.split("=").nth(0);
+            return Some(dest_map(inst).to_string());
+        }
+        None
     }
-    fn jump(&self) -> String {
-        "".to_string()
+    fn jump(&self) -> Option<String> {
+        let cmd = self.command.as_ref().unwrap();
+        if cmd.contains(";") {
+            let inst = cmd.split(";").nth(1);
+            return Some(jump_map(inst).to_string());
+        }
+        None
     }
 }
 
@@ -162,5 +186,6 @@ mod tests {
     fn for_parser1() {
         let mut parser = Parser::new();
         let result = parser.run("src/tests/parser/1.asm");
+        println!("{:?}", result);
     }
 }
