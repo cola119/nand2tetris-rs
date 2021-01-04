@@ -75,7 +75,7 @@ impl fmt::Display for ParseResult {
                         token.dest.as_ref().unwrap(),
                         token.jump.as_ref().unwrap()
                     ),
-                    ACommand | LCommand => {
+                    ACommand => {
                         let symbol = token.symbol.as_ref().unwrap();
                         if symbol.starts_with("0") || symbol.starts_with("1") {
                             format!("0{}", symbol)
@@ -87,6 +87,7 @@ impl fmt::Display for ParseResult {
                             format!("0{}", addr)
                         }
                     }
+                    LCommand => return format!("{}", acc),
                 };
                 if acc == "" {
                     return format!("{}", binary_str);
@@ -170,7 +171,7 @@ impl Parser {
                 }
                 LCommand => {
                     let symbol = &self.symbol();
-                    let address = &format!("{:015b}", line_count + 1);
+                    let address = &format!("{:015b}", line_count);
                     self.symbol_table.add_entry(symbol, address);
                 }
             }
@@ -216,7 +217,6 @@ impl Parser {
             let symbol = cmd.split("@").nth(1).unwrap().to_string();
             if let Ok(symbol_num) = symbol.parse::<i32>() {
                 // @30
-                println!("{}", symbol_num);
                 return format!("{:015b}", symbol_num);
             }
             // @LOOP
@@ -270,15 +270,25 @@ impl Parser {
 
 #[cfg(test)]
 mod tests {
+    use crate::util::read_file_contents;
+
     use super::*;
 
     #[test]
-    fn for_parser1() {
+    fn for_parser_add() {
         let mut parser = Parser::new();
         let result = parser.run("src/programs/Add.asm");
         assert_eq!(
             result.to_string(),
            "0000000000000010\n1110110000010000\n0000000000000011\n1110000010010000\n0000000000000000\n1110001100001000"
         )
+    }
+
+    #[test]
+    fn for_parser_max() {
+        let mut parser = Parser::new();
+        let result = parser.run("src/programs/Max.asm");
+        let expect = read_file_contents("src/programs/max.txt");
+        assert_eq!(result.to_string(), expect);
     }
 }
