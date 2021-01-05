@@ -157,25 +157,27 @@ impl Computer {
             true => I,
             false => O,
         };
-        let initial = self.rom.output(&Clock::new(), [O; 15]);
-        self.execute(
-            initial,
-            Word::new([O; 16]),
-            reset_bit,
-            instruction_num,
-            Word::new([O; 16]),
-        );
+
+        let mut in_m = Word::new([O; 16]);
+        let mut pc = [O; 15];
+
+        loop {
+            let res = self.execute(pc, in_m, reset_bit);
+
+            if Computer::is_last(instruction_num, pc) == Word::new([I; 16]) {
+                break;
+            }
+
+            pc = res.0;
+            in_m = res.1;
+        }
     }
 
-    fn execute(
-        &mut self,
-        instruction: Word,
-        in_m: Word,
-        reset: bit,
-        instruction_num: Word,
-        is_last: Word,
-    ) {
+    fn execute(&mut self, pc: [bit; 15], in_m: Word, reset: bit) -> ([bit; 15], Word) {
         let clock = Clock::new();
+
+        // ROM
+        let instruction = self.rom.output(&clock, pc);
 
         // CPU
         if self.debug {
@@ -209,24 +211,11 @@ impl Computer {
             println!("{} = memory.output(addr: {:?})", in_m, address_m);
         }
 
-        // ROM
-        let next_instruction = self.rom.output(&clock, pc);
-
         if self.debug {
             println!("");
         }
 
-        // 終了判定
-        if is_last == Word::new([I; 16]) {
-            return;
-        }
-        self.execute(
-            next_instruction,
-            in_m,
-            O,
-            instruction_num,
-            Computer::is_last(instruction_num, pc),
-        )
+        (pc, in_m)
     }
 
     fn is_last(instruction_num: Word, pc: [bit; 15]) -> Word {

@@ -16,11 +16,12 @@ fn start_computer(mut socket: WebSocket<TcpStream>) {
 
     let (to_computer, from_external) = mpsc::channel::<String>();
     let (to_external, from_computer) = mpsc::channel::<String>();
+    // issue: CPU usage hits 100%
     thread::spawn(move || loop {
         if let Ok(msg) = socket.read_message() {
             to_computer.send(msg.to_string()).unwrap();
         }
-        if let Ok(msg) = from_computer.recv() {
+        if let Ok(msg) = from_computer.try_recv() {
             socket.write_message(Message::from(msg)).unwrap();
         }
     });
@@ -40,8 +41,13 @@ fn start_computer(mut socket: WebSocket<TcpStream>) {
 fn main() {
     let server = TcpListener::bind("127.0.0.1:9001").unwrap();
     for stream in server.incoming() {
-        println!("socket incoming");
-        let socket = accept(stream.unwrap()).unwrap();
-        start_computer(socket);
+        match stream {
+            Err(e) => panic!(e),
+            Ok(tcp) => {
+                tcp.set_nonblocking(true).unwrap();
+                let socket = accept(tcp).unwrap();
+                start_computer(socket);
+            }
+        }
     }
 }
