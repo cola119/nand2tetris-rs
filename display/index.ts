@@ -46,11 +46,39 @@ const main = () => {
   });
 
   window.addEventListener("keydown", (e) => {
-    console.log(e.key);
-    const data = { key: e.key };
-    console.log(`send ${JSON.stringify(data)}`);
+    const key = getAsciiOrHackcode(e.key);
+    const data = { key, down: true };
+    console.log(`keydown ${JSON.stringify(data)}`);
     ws.send(JSON.stringify(data));
   });
+
+  window.addEventListener("keyup", (e) => {
+    const key = getAsciiOrHackcode(e.key);
+    const data = { key, down: false };
+    console.log(`keyup ${JSON.stringify(data)}`);
+    ws.send(JSON.stringify(data));
+  });
+};
+
+const getAsciiOrHackcode = (key: string): number => {
+  if (key.length === 1) return key.charCodeAt(0);
+  switch (key) {
+    case "Enter":
+      return 128;
+    case "Backspace":
+      return 129;
+    case "ArrowLeft":
+      return 130;
+    case "ArrowUp":
+      return 131;
+    case "ArrowRight":
+      return 132;
+    case "ArrowDown":
+      return 133;
+    case "Escape":
+      return 140;
+  }
+  return 0;
 };
 
 window.addEventListener("DOMContentLoaded", (event) => {

@@ -74,6 +74,7 @@ impl Memory {
             ],
             and(and(address[0], not(address[1])), load),
         );
+        self.keyboard.input();
     }
     pub fn output(&self, clock_t: &Clock, address: [bit; 15]) -> Word {
         let ram_out = self.ram.output(
@@ -114,9 +115,7 @@ impl Memory {
             ],
         );
 
-        self.keyboard.output();
-
-        let keyboard_out = Word::new([O; 16]);
+        let keyboard_out = self.keyboard.output();
         mux4way16(
             ram_out,
             ram_out,
