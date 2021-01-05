@@ -291,4 +291,12 @@ mod tests {
         let expect = read_file_contents("src/programs/max.txt");
         assert_eq!(result.to_string(), expect);
     }
+
+    #[test]
+    fn for_parser_rect() {
+        let mut parser = Parser::new();
+        let result = parser.run("src/programs/Rect.asm");
+        let expect = read_file_contents("src/programs/rect.txt");
+        assert_eq!(result.to_string(), expect);
+    }
 }
