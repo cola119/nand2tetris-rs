@@ -3,18 +3,31 @@ mod computer;
 mod util;
 
 use base::logic::bit::O;
-use base::screen::ScreenWriter;
 use computer::Computer;
-use std::net::{TcpListener, TcpStream};
-use tungstenite::{server::accept, WebSocket};
+use std::{
+    net::{TcpListener, TcpStream},
+    sync::mpsc,
+    thread,
+};
+use tungstenite::{server::accept, Message, WebSocket};
 
-fn start_computer(socket: WebSocket<TcpStream>) {
+fn start_computer(mut socket: WebSocket<TcpStream>) {
     println!("start_computer");
-    let writer = ScreenWriter::new(socket);
 
-    let mut computer = Computer::new(Some(writer), false);
+    let (to_computer, from_external) = mpsc::channel::<String>();
+    let (to_external, from_computer) = mpsc::channel::<String>();
+    thread::spawn(move || loop {
+        if let Ok(msg) = socket.read_message() {
+            to_computer.send(msg.to_string()).unwrap();
+        }
+        if let Ok(msg) = from_computer.recv() {
+            socket.write_message(Message::from(msg)).unwrap();
+        }
+    });
 
-    computer.run("src/program/rect_from_assembler.txt", false);
+    let mut computer = Computer::new(Some((to_external, from_external)), false);
+
+    computer.run("src/program/rect.txt", false);
 
     println!(
         "{}",

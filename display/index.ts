@@ -44,6 +44,13 @@ const main = () => {
   ws.addEventListener("close", (e) => {
     console.log("close");
   });
+
+  window.addEventListener("keydown", (e) => {
+    console.log(e.key);
+    const data = { key: e.key };
+    console.log(`send ${JSON.stringify(data)}`);
+    ws.send(JSON.stringify(data));
+  });
 };
 
 window.addEventListener("DOMContentLoaded", (event) => {

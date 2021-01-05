@@ -1,7 +1,5 @@
 #![allow(dead_code)]
-use std::net::TcpStream;
-
-use tungstenite::{Message, WebSocket};
+use std::sync::mpsc::Sender;
 
 use crate::base::logic::{
     bit::{self, I, O},
@@ -10,31 +8,16 @@ use crate::base::logic::{
 use crate::base::{dff::Clock, ram::RAM4K};
 
 #[derive(Debug)]
-pub struct ScreenWriter {
-    ws: WebSocket<TcpStream>,
-}
-impl ScreenWriter {
-    pub fn new(socket: WebSocket<TcpStream>) -> Self {
-        Self { ws: socket }
-    }
-    pub fn write_msg(&mut self, msg: String) {
-        self.ws
-            .write_message(Message::from(msg))
-            .expect("couldn't send")
-    }
-}
-
-#[derive(Debug)]
 pub struct Screen {
     rams: [RAM4K; 2],
-    writer: Option<ScreenWriter>,
+    sender: Option<Sender<String>>,
 }
 
 impl Screen {
-    pub fn new(writer: Option<ScreenWriter>) -> Self {
+    pub fn new(sender: Option<Sender<String>>) -> Self {
         Self {
             rams: [RAM4K::new(); 2],
-            writer,
+            sender,
         }
     }
 
@@ -62,7 +45,7 @@ impl Screen {
         }
     }
 
-    fn send_message(&mut self, input: Word, address: [bit; 13]) {
+    fn send_message(&self, input: Word, address: [bit; 13]) {
         let digit = 13;
         let register_index = (0..digit).fold(0, |sum, i| {
             sum + (address[i].to_string().parse::<usize>().unwrap())
@@ -74,12 +57,10 @@ impl Screen {
             "{{\"register_index\":{},\"x\":{},\"y\":{},\"input\":\"{}\"}}",
             register_index, x, y, input
         );
-        match self.writer {
-            Some(ref mut x) => x.write_msg(message),
-            None => {
-                println!("none");
-            }
-        };
+
+        if let Some(ref tx) = self.sender {
+            tx.send(message).unwrap();
+        }
     }
 
     pub fn output(&self, clock_t: &Clock, address: [bit; 13]) -> Word {

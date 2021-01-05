@@ -1,25 +1,34 @@
 #![allow(dead_code)]
+use std::sync::mpsc::{Receiver, Sender};
+
 use crate::base::{
     arithmetic::add16,
     cpu::CPU,
     dff::Clock,
+    keyboard::Keyboard,
     logic::bit::{I, O},
     logic::{and, bit, mux4way16, not, xor, Word},
     ram::RAM16K,
     rom::ROM32K,
-    screen::{Screen, ScreenWriter},
+    screen::Screen,
 };
 
 pub struct Memory {
     ram: RAM16K,
     screen: Screen,
+    keyboard: Keyboard,
 }
 
 impl Memory {
-    pub fn new(writer: Option<ScreenWriter>) -> Self {
+    pub fn new(channel: Option<(Sender<String>, Receiver<String>)>) -> Self {
+        let (tx, rx) = match channel {
+            Some(taple) => (Some(taple.0), Some(taple.1)),
+            None => (None, None),
+        };
         Self {
             ram: RAM16K::new(),
-            screen: Screen::new(writer),
+            screen: Screen::new(tx),
+            keyboard: Keyboard::new(rx),
         }
     }
 
@@ -104,7 +113,9 @@ impl Memory {
                 address[14],
             ],
         );
-        // WIP
+
+        self.keyboard.output();
+
         let keyboard_out = Word::new([O; 16]);
         mux4way16(
             ram_out,
@@ -125,11 +136,11 @@ pub struct Computer {
 }
 
 impl Computer {
-    pub fn new(writer: Option<ScreenWriter>, debug: bool) -> Self {
+    pub fn new(channel: Option<(Sender<String>, Receiver<String>)>, debug: bool) -> Self {
         Self {
             rom: ROM32K::new(),
             cpu: CPU::new(),
-            memory: Memory::new(writer),
+            memory: Memory::new(channel),
             debug,
         }
     }

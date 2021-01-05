@@ -2,6 +2,7 @@ pub mod alu;
 pub mod arithmetic;
 pub mod cpu;
 pub mod dff;
+pub mod keyboard;
 pub mod logic;
 pub mod pc;
 pub mod ram;
