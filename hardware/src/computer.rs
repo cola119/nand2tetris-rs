@@ -22,7 +22,7 @@ pub struct Memory {
 impl Memory {
     pub fn new(channel: Option<(Sender<String>, Receiver<String>)>) -> Self {
         let (tx, rx) = match channel {
-            Some(taple) => (Some(taple.0), Some(taple.1)),
+            Some(tuple) => (Some(tuple.0), Some(tuple.1)),
             None => (None, None),
         };
         Self {
