@@ -28,7 +28,7 @@ fn start_computer(mut socket: WebSocket<TcpStream>) {
 
     let mut computer = Computer::new(Some((to_external, from_external)), false);
 
-    computer.run("src/program/rect.txt", false);
+    computer.run("src/program/pong.txt", false);
 
     println!(
         "{}",
