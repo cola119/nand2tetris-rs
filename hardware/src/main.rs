@@ -2,7 +2,6 @@ mod base;
 mod computer;
 mod util;
 
-use base::logic::bit::O;
 use computer::Computer;
 use std::{
     net::{TcpListener, TcpStream},
@@ -30,10 +29,8 @@ fn start_computer(mut socket: WebSocket<TcpStream>) {
 
     computer.run("src/program/pong.txt", false);
 
-    println!(
-        "{}",
-        computer.memory_out([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O])
-    );
+    println!("{}", computer.memory_out("000000000000000"));
+    println!("{}", computer.memory_out("000000100000000"));
 
     println!("done");
 }

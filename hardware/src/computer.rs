@@ -1,16 +1,22 @@
 #![allow(dead_code)]
-use std::sync::mpsc::{Receiver, Sender};
+use std::{
+    convert::TryInto,
+    sync::mpsc::{Receiver, Sender},
+};
 
-use crate::base::{
-    arithmetic::add16,
-    cpu::CPU,
-    dff::Clock,
-    keyboard::Keyboard,
-    logic::bit::{I, O},
-    logic::{and, bit, mux4way16, not, xor, Word},
-    ram::RAM16K,
-    rom::ROM32K,
-    screen::Screen,
+use crate::{
+    base::{
+        arithmetic::add16,
+        cpu::CPU,
+        dff::Clock,
+        keyboard::Keyboard,
+        logic::bit::{I, O},
+        logic::{and, bit, mux4way16, not, xor, Word},
+        ram::RAM16K,
+        rom::ROM32K,
+        screen::Screen,
+    },
+    util::str_to_binary,
 };
 
 pub struct Memory {
@@ -144,7 +150,13 @@ impl Computer {
         }
     }
 
-    pub fn memory_out(self, address: [bit; 15]) -> Word {
+    pub fn memory_out(&self, address_str: &str) -> Word {
+        let address: [bit; 15] =
+            str_to_binary(address_str)
+                .try_into()
+                .unwrap_or_else(|v: Vec<bit>| {
+                    panic!("Expected a Vec of length {} but it was {}", 15, v.len())
+                });
         let mut clock = Clock::new();
         clock.next();
         self.memory.output(&clock, address)
@@ -255,7 +267,7 @@ mod tests {
     fn for_computer_max() {
         let mut computer = Computer::new(None, false);
         computer.run("src/program/max.txt", false);
-        let r0 = computer.memory_out([O, O, O, O, O, O, O, O, O, O, O, O, O, I, O]);
+        let r0 = computer.memory_out("000000000000010");
         assert_eq!(r0, Word::from("0000000001000011"));
     }
 
@@ -263,7 +275,7 @@ mod tests {
     fn for_computer_max2() {
         let mut computer = Computer::new(None, false);
         computer.run("src/program/max2.txt", false);
-        let r0 = computer.memory_out([O, O, O, O, O, O, O, O, O, O, O, O, O, I, O]);
+        let r0 = computer.memory_out("000000000000010");
         assert_eq!(r0, Word::from("0000000011000011"));
     }
 
@@ -271,7 +283,7 @@ mod tests {
     fn for_computer_add() {
         let mut computer = Computer::new(None, false);
         computer.run("src/program/add.txt", false);
-        let r0 = computer.memory_out([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]);
+        let r0 = computer.memory_out("000000000000000");
         assert_eq!(r0, Word::from("0000000000000101"));
     }
 }
