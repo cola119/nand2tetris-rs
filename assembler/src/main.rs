@@ -10,8 +10,8 @@ mod util;
 
 fn main() {
     let mut parser = Parser::new();
-    let result = parser.run("src/programs/Pong.asm");
+    let result = parser.run("src/programs/SimpleAdd.asm");
 
-    let mut file = File::create("src/programs/pong.txt").unwrap();
+    let mut file = File::create("src/programs/SimpleAdd.txt").unwrap();
     file.write_all(result.to_string().as_bytes()).unwrap();
 }

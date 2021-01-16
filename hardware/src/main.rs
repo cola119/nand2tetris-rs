@@ -11,7 +11,7 @@ use std::{
 use tungstenite::{server::accept, Message, WebSocket};
 
 fn start_computer(mut socket: WebSocket<TcpStream>) {
-    println!("start_computer");
+    println!("------ start_computer ------");
 
     let (to_computer, from_external) = mpsc::channel::<String>();
     let (to_external, from_computer) = mpsc::channel::<String>();
@@ -27,12 +27,12 @@ fn start_computer(mut socket: WebSocket<TcpStream>) {
 
     let mut computer = Computer::new(Some((to_external, from_external)), false);
 
-    computer.run("src/program/pong.txt", false);
+    computer.run("src/program/test.txt", false);
 
-    println!("{}", computer.memory_out("000000000000000"));
-    println!("{}", computer.memory_out("000000100000000"));
+    println!("{}", computer.get_memory_info(0, 32));
+    println!("{}", computer.get_memory_info(256, 260));
 
-    println!("done");
+    println!("------ start_stop ------");
 }
 
 fn main() {

@@ -162,6 +162,33 @@ impl Computer {
         self.memory.output(&clock, address)
     }
 
+    pub fn get_memory_info(&self, from: i32, to: i32) -> String {
+        print!("collecting memory info... ");
+        let mut info = "".to_string();
+        for i in from..to {
+            if i - from == (to - from) / 4 {
+                print!("25% ");
+            }
+            if i - from == (to - from) / 2 {
+                print!("50% ");
+            }
+            if i - from == (to - from) * 3 / 4 {
+                println!("75%");
+            }
+            let binary_str: &str = &format!("{:015b}", i);
+            let output = self.memory_out(binary_str);
+            if output != Word::new([O; 16]) {
+                let with_info = format!("{}: {}", i, output);
+                info = if info == "" {
+                    with_info
+                } else {
+                    format!("{}\n{}", info, with_info)
+                }
+            }
+        }
+        info
+    }
+
     pub fn run(&mut self, filename: &str, reset: bool) {
         let instruction_num = self.rom.load(&filename);
         let reset_bit = match reset {
@@ -185,7 +212,7 @@ impl Computer {
     }
 
     fn execute(&mut self, pc: [bit; 15], in_m: Word, reset: bit) -> ([bit; 15], Word) {
-        let clock = Clock::new();
+        let mut clock = Clock::new();
 
         // ROM
         let instruction = self.rom.output(&clock, pc);
@@ -217,6 +244,7 @@ impl Computer {
             );
         }
 
+        clock.next();
         let in_m = self.memory.output(&clock, address_m);
         if self.debug {
             println!("{} = memory.output(addr: {:?})", in_m, address_m);
