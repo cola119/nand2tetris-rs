@@ -2,7 +2,7 @@
 use std::{fs::File, io::BufRead, io::BufReader};
 use VmCommandType::{ARITHMETIC, CALL, FUNCTION, GOTO, IF, LABEL, POP, PUSH, RETURN};
 #[derive(Debug, PartialEq)]
-enum VmCommandType {
+pub enum VmCommandType {
     ARITHMETIC,
     PUSH,
     POP,
@@ -16,14 +16,14 @@ enum VmCommandType {
 
 #[derive(Debug, PartialEq)]
 pub struct VmParserResult {
-    tokens: Vec<VmToken>,
+    pub tokens: Vec<VmToken>,
 }
 
 #[derive(Debug, PartialEq)]
 pub struct VmToken {
-    ctype: VmCommandType,
-    arg1: Option<String>,
-    arg2: Option<String>,
+    pub ctype: VmCommandType,
+    pub arg1: Option<String>,
+    pub arg2: Option<String>,
 }
 
 #[derive(Debug)]

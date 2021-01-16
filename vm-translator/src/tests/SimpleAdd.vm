@@ -1,0 +1,27 @@
+push constant 7
+// @7
+// D=A  // D=7
+
+// @SP  // スタックポインタ(ex: sp = 0000101) constantなのでこれはラベル扱いで固定
+// A=M  // A=M[SP] // スタックポインタアドレスにある値（アドレス）へマッピング
+// M=D  // M[M[SP]]=7
+// @SP
+// M=M+1    // M[SP] += 1 // スタックポインタアドレスにある値をインクリメント
+
+push constant 8
+add
+
+
+push argument 1
+// @1
+// D=A
+
+// @ARG
+// A=D+M
+// D=M
+//
+// @SP
+// A=M
+// M=D
+// @SP
+// M=M+1

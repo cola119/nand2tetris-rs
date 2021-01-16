@@ -1,6 +1,11 @@
+use vm_translator::VmTranslator;
+
+mod code_writer;
 mod parser;
-mod writer;
+mod vm_translator;
 
 fn main() {
-    println!("Hello, world!");
+    let mut vm_translator = VmTranslator::new();
+    let res = vm_translator.run("src/tests/SimpleAdd.vm");
+    println!("{:?}", res);
 }
