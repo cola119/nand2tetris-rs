@@ -1,13 +1,13 @@
 // comment
 add
-sub
-neg
-eq
-gt
-lt
-and
-or
-not
+// sub
+// neg
+// eq
+// gt
+// lt
+// and
+// or
+// not
 push local 1    // push local[1]
 pop local 1 // pop local[1]
 label label_arg

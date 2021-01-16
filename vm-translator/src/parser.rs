@@ -14,15 +14,27 @@ enum VmCommandType {
     CALL,
 }
 
+#[derive(Debug, PartialEq)]
+pub struct VmParserResult {
+    tokens: Vec<VmToken>,
+}
+
+#[derive(Debug, PartialEq)]
+pub struct VmToken {
+    ctype: VmCommandType,
+    arg1: Option<String>,
+    arg2: Option<String>,
+}
+
 #[derive(Debug)]
-pub struct Parser {
+pub struct VmParser {
     lines: Vec<String>,
     index: usize,
     // push local 1
     command: Option<String>,
 }
 
-impl Parser {
+impl VmParser {
     pub fn new() -> Self {
         Self {
             lines: Vec::new(),
@@ -31,27 +43,42 @@ impl Parser {
         }
     }
 
-    pub fn run(&mut self, filename: &str) {
+    pub fn run(&mut self, filename: &str) -> VmParserResult {
+        let mut tokens: Vec<VmToken> = Vec::new();
+
         self.load(filename);
         while self.has_more_commands() {
             self.advance();
             if self.command == None {
                 continue;
             }
-            println!("{:?}", self.command);
-            println!("{:?}", self.command_type());
 
-            if self.command_type() != RETURN {
-                println!("{:?}", self.arg1());
-            }
-            if self.command_type() == PUSH
-                || self.command_type() == POP
-                || self.command_type() == FUNCTION
-                || self.command_type() == CALL
-            {
-                println!("{:?}", self.arg2());
-            }
+            let ctype = self.command_type();
+            let token = match ctype {
+                RETURN => VmToken {
+                    ctype,
+                    arg1: None,
+                    arg2: None,
+                },
+                PUSH | POP | FUNCTION | CALL => VmToken {
+                    ctype,
+                    arg1: Some(self.arg1()),
+                    arg2: Some(self.arg2()),
+                },
+                ARITHMETIC | LABEL | GOTO | IF => VmToken {
+                    ctype,
+                    arg1: Some(self.arg1()),
+                    arg2: None,
+                },
+                // _ => {
+                //     panic!(format!("Unknown command: {:?}", self.command))
+                // }
+            };
+
+            tokens.push(token);
         }
+
+        return VmParserResult { tokens };
     }
 
     fn load(&mut self, filename: &str) {
@@ -124,7 +151,59 @@ mod tests {
 
     #[test]
     fn for_parser_1() {
-        let mut parser = Parser::new();
-        parser.run("src/tests/vm_list.vm");
+        let mut parser = VmParser::new();
+        let result = parser.run("src/tests/vm_list.vm");
+
+        let expect = VmParserResult {
+            tokens: Vec::from([
+                VmToken {
+                    ctype: ARITHMETIC,
+                    arg1: Some("add".to_string()),
+                    arg2: None,
+                },
+                VmToken {
+                    ctype: PUSH,
+                    arg1: Some("local".to_string()),
+                    arg2: Some("1".to_string()),
+                },
+                VmToken {
+                    ctype: POP,
+                    arg1: Some("local".to_string()),
+                    arg2: Some("1".to_string()),
+                },
+                VmToken {
+                    ctype: LABEL,
+                    arg1: Some("label_arg".to_string()),
+                    arg2: None,
+                },
+                VmToken {
+                    ctype: GOTO,
+                    arg1: Some("goto_arg".to_string()),
+                    arg2: None,
+                },
+                VmToken {
+                    ctype: IF,
+                    arg1: Some("if-goto_arg".to_string()),
+                    arg2: None,
+                },
+                VmToken {
+                    ctype: FUNCTION,
+                    arg1: Some("functionName".to_string()),
+                    arg2: Some("nLocals".to_string()),
+                },
+                VmToken {
+                    ctype: CALL,
+                    arg1: Some("functionName".to_string()),
+                    arg2: Some("nArgs".to_string()),
+                },
+                VmToken {
+                    ctype: RETURN,
+                    arg1: None,
+                    arg2: None,
+                },
+            ]),
+        };
+
+        assert_eq!(result, expect);
     }
 }
