@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 use std::{fs::File, io::BufRead, io::BufReader};
 use VmCommandType::{ARITHMETIC, CALL, FUNCTION, GOTO, IF, LABEL, POP, PUSH, RETURN};
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 enum VmCommandType {
     ARITHMETIC,
     PUSH,
@@ -33,9 +33,25 @@ impl Parser {
 
     pub fn run(&mut self, filename: &str) {
         self.load(filename);
-        self.advance();
-        println!("{:?}", self.command);
-        println!("{:?}", self.command_type());
+        while self.has_more_commands() {
+            self.advance();
+            if self.command == None {
+                continue;
+            }
+            println!("{:?}", self.command);
+            println!("{:?}", self.command_type());
+
+            if self.command_type() != RETURN {
+                println!("{:?}", self.arg1());
+            }
+            if self.command_type() == PUSH
+                || self.command_type() == POP
+                || self.command_type() == FUNCTION
+                || self.command_type() == CALL
+            {
+                println!("{:?}", self.arg2());
+            }
+        }
     }
 
     fn load(&mut self, filename: &str) {
@@ -61,7 +77,8 @@ impl Parser {
                 .split("//")
                 .nth(0)
                 .map(|s| -> String { s.trim().to_string() })
-        })
+        });
+        self.index += 1;
     }
 
     fn command_type(&self) -> VmCommandType {
@@ -82,6 +99,22 @@ impl Parser {
             "return" => RETURN,
             _ => panic!(format!("unknown command: {}", command_str)),
         }
+    }
+
+    fn arg1(&self) -> String {
+        let str: &str = &self.command.as_ref().unwrap();
+        let parsed = str.split(" ").collect::<Vec<&str>>();
+        if self.command_type() == ARITHMETIC {
+            parsed.get(0).unwrap().to_string()
+        } else {
+            parsed.get(1).unwrap().to_string()
+        }
+    }
+
+    fn arg2(&self) -> String {
+        let str: &str = &self.command.as_ref().unwrap();
+        let parsed = str.split(" ").collect::<Vec<&str>>();
+        parsed.get(2).unwrap().to_string()
     }
 }
 

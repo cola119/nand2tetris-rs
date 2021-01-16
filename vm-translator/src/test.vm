@@ -1,1 +1,18 @@
-push local 0
+// comment
+add
+sub
+neg
+eq
+gt
+lt
+and
+or
+not
+push local 1    // push local[1]
+pop local 1 // pop local[1]
+label label_arg
+goto goto_arg
+if-goto if-goto_arg
+function functionName nLocals   // nLocals: 関数のローカル変数の数
+call functionName nArgs // nArgs: 引数の数
+return
