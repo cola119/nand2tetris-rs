@@ -125,6 +125,6 @@ mod tests {
     #[test]
     fn for_parser_1() {
         let mut parser = Parser::new();
-        parser.run("src/test.vm");
+        parser.run("src/tests/vm_list.vm");
     }
 }
