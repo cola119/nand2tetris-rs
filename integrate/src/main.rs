@@ -7,7 +7,7 @@ use vm_translator::vm_translator::VmTranslator;
 
 use std::fs::File;
 use std::io::Write;
-
+use std::process;
 use std::{
     net::{TcpListener, TcpStream},
     sync::mpsc,
@@ -16,19 +16,18 @@ use std::{
 use tungstenite::{server::accept, Message, WebSocket};
 
 fn main() {
+    let vm_path = "integrate/src/programs/Add.vm";
+    let asm_path = "integrate/src/programs/Add.asm";
+    let ml_path = "integrate/src/programs/Add.txt";
+
     // VM to Assembly
     let mut vm_translator = VmTranslator::new();
-    vm_translator
-        .run(
-            "integrate/src/programs/Add.vm",
-            "integrate/src/programs/Add.asm",
-        )
-        .expect("Translate VM");
+    vm_translator.run(vm_path, asm_path).expect("Translate VM");
 
     // Assembly to Machine language(ML)
     let mut parser = Parser::new(); // TODO: include saving feature ?
-    let parsed = parser.run("integrate/src/programs/Add.asm");
-    let mut file = File::create("integrate/src/programs/Add.txt").unwrap();
+    let parsed = parser.run(asm_path);
+    let mut file = File::create(ml_path).unwrap();
     file.write_all(parsed.to_string().as_bytes()).unwrap();
 
     // Execute ml
@@ -39,7 +38,7 @@ fn main() {
             Ok(tcp) => {
                 tcp.set_nonblocking(true).unwrap();
                 let socket = accept(tcp).unwrap();
-                start_computer(socket, "integrate/src/programs/Add.txt");
+                start_computer(socket, ml_path);
             }
         }
     }
@@ -68,4 +67,5 @@ fn start_computer(mut socket: WebSocket<TcpStream>, filename: &str) {
     println!("{}", computer.get_memory_info(256, 260));
 
     println!("------ start_stop ------");
+    process::exit(0);
 }
