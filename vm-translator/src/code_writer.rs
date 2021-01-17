@@ -37,7 +37,7 @@ impl VmCodeWriter {
             _ => panic!(format!("Unknown operator: {}", operator_str)),
         };
         format!(
-            "@SP\nAM=M-1\nD=M\n@SP\nAM=M-1\nD=D{}M\n@SP\nA=M\nM=D\n@SP\nM=M+1",
+            "@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nD=D{}M\n@SP\nA=M\nM=D\n@SP\nM=M+1",
             operator
         )
     }

@@ -24,15 +24,11 @@ impl VmTranslator {
     }
 
     pub fn translate(&mut self, input_file: &str) -> String {
-        let mut code = "".to_string();
+        let mut code = "@256\nD=A\n@SP\nM=D".to_string();
         let parsed = self.parser.run(input_file);
         for token in parsed.tokens.iter() {
             let sub_code = self.writer.translate(token);
-            code = if code == "" {
-                sub_code
-            } else {
-                format!("{}\n{}", code, sub_code)
-            }
+            code = format!("{}\n{}", code, sub_code)
         }
         code
     }
@@ -46,7 +42,11 @@ mod tests {
     fn for_translator_1() {
         let mut translator = VmTranslator::new();
         let result = translator.translate("src/tests/add.vm");
-        let expect = "@7
+        let expect = "@256
+                            D=A
+                            @SP
+                            M=D
+                            @7
                             D=A
                             @SP
                             A=M

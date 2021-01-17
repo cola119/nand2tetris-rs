@@ -29,7 +29,7 @@ fn start_computer(mut socket: WebSocket<TcpStream>) {
 
     computer.run("src/program/test.txt", false);
 
-    println!("{}", computer.get_memory_info(0, 32));
+    println!("{}", computer.get_memory_info(0, 8));
     println!("{}", computer.get_memory_info(256, 260));
 
     println!("------ start_stop ------");
