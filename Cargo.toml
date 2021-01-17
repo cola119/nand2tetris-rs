@@ -1,0 +1,8 @@
+[workspace]
+
+members = [
+    "assembler",
+    "hardware",
+    "vm-translator",
+    "integrate"
+]
