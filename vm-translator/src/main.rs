@@ -6,6 +6,9 @@ mod vm_translator;
 
 fn main() {
     let mut vm_translator = VmTranslator::new();
-    let res = vm_translator.run("src/tests/SimpleAdd.vm");
-    println!("{:?}", res);
+    vm_translator
+        .run("src/programs/SimpleAdd.vm", "src/programs/SimpleAdd.asm")
+        .unwrap();
 }
+
+// initialize stack ?
