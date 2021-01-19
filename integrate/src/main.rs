@@ -16,9 +16,10 @@ use std::{
 use tungstenite::{server::accept, Message, WebSocket};
 
 fn main() {
-    let vm_path = "integrate/src/programs/Add.vm";
-    let asm_path = "integrate/src/programs/Add.asm";
-    let ml_path = "integrate/src/programs/Add.txt";
+    let program_name = "Sub";
+    let vm_path = &format!("integrate/src/programs/{}.vm", program_name);
+    let asm_path = &format!("integrate/src/programs/{}.asm", program_name);
+    let ml_path = &format!("integrate/src/programs/{}.txt", program_name);
 
     // VM to Assembly
     let mut vm_translator = VmTranslator::new();
