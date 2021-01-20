@@ -171,10 +171,11 @@ mod tests {
             M=D
             @SP
             M=M+1
-            (FALSE_LB)"
-                .split_whitespace()
-                .collect::<Vec<&str>>()
-                .join("\n")
+            (FALSE_LB)
+            @SP"
+            .split_whitespace()
+            .collect::<Vec<&str>>()
+            .join("\n")
         );
     }
 }

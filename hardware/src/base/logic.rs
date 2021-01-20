@@ -27,6 +27,8 @@ impl fmt::Display for bit {
 pub struct Word([bit; 16]);
 
 impl From<&str> for Word {
+    // TODO from(number)
+
     fn from(str: &str) -> Self {
         let char_bits: Vec<char> = str.chars().collect();
         if char_bits.len() != 16 {
