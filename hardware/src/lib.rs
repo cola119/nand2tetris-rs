@@ -1,3 +1,3 @@
-mod base;
+pub mod base;
 pub mod computer;
 mod util;

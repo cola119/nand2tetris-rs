@@ -31,15 +31,26 @@ impl VmCodeWriter {
     }
 
     fn translate_arithmetic(&self, operator_str: &str) -> String {
-        let operator = match operator_str {
-            "add" => "+",
-            "sub" => "-",
+        let incr_and_push = "@SP\nA=M\nM=D\n@SP\nM=M+1";
+        let formula = match operator_str {
+            "add" => format!("D=D+M\n{}", incr_and_push),
+            "sub" => format!("D=M-D\n{}", incr_and_push),
+            "neg" => format!("D=-D\n{}", incr_and_push),
+            "eq" => format!(
+                    "D=M-D\n@TRUE_LB\nD;JEQ\nD=0\n{}\n@FALSE_LB\n0;JMP\n(TRUE_LB)\nD=-1\n{}\n(FALSE_LB)\n@SP", //@SP is placeholder
+                    incr_and_push, incr_and_push),
+            "gt" => format!(
+                    "D=M-D\n@TRUE_LB\nD;JGT\nD=0\n{}\n@FALSE_LB\n0;JMP\n(TRUE_LB)\nD=-1\n{}\n(FALSE_LB)\n@SP",
+                     incr_and_push, incr_and_push),
+            "lt" => format!(
+                    "D=M-D\n@TRUE_LB\nD;JLT\nD=0\n{}\n@FALSE_LB\n0;JMP\n(TRUE_LB)\nD=-1\n{}\n(FALSE_LB)\n@SP",
+                    incr_and_push, incr_and_push),
+            "and" => format!("D=D&M\n{}", incr_and_push),
+            "or" => format!("D=D|M\n{}", incr_and_push),
+            "not" => format!("D=!D\n{}", incr_and_push),
             _ => panic!(format!("Unknown operator: {}", operator_str)),
         };
-        format!(
-            "@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nD=D{}M\n@SP\nA=M\nM=D\n@SP\nM=M+1",
-            operator
-        )
+        format!("@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\n{}", formula)
     }
 }
 
@@ -119,6 +130,48 @@ mod tests {
             M=D
             @SP
             M=M+1"
+                .split_whitespace()
+                .collect::<Vec<&str>>()
+                .join("\n")
+        );
+    }
+
+    #[test]
+    fn for_writer_4() {
+        let writer = VmCodeWriter::new();
+        let token = VmToken {
+            ctype: ARITHMETIC,
+            arg1: Some("eq".to_string()),
+            arg2: None,
+        };
+        assert_eq!(
+            writer.translate(&token),
+            "@SP
+            M=M-1
+            A=M
+            D=M
+            @SP
+            M=M-1
+            A=M
+            D=M-D
+            @TRUE_LB
+            D;JEQ
+            D=0
+            @SP
+            A=M
+            M=D
+            @SP
+            M=M+1
+            @FALSE_LB
+            0;JMP
+            (TRUE_LB)
+            D=-1
+            @SP
+            A=M
+            M=D
+            @SP
+            M=M+1
+            (FALSE_LB)"
                 .split_whitespace()
                 .collect::<Vec<&str>>()
                 .join("\n")
