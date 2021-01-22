@@ -2,14 +2,16 @@
 use crate::parser::VmCommandType::{ARITHMETIC, PUSH};
 use crate::parser::VmToken;
 
-pub struct VmCodeWriter {}
+pub struct VmCodeWriter {
+    label_cnt: i32,
+}
 
 impl VmCodeWriter {
     pub fn new() -> Self {
-        Self {}
+        Self { label_cnt: -1 }
     }
 
-    pub fn translate(&self, token: &VmToken) -> String {
+    pub fn translate(&mut self, token: &VmToken) -> String {
         match token.ctype {
             ARITHMETIC => self.translate_arithmetic(token.arg1.as_ref().unwrap()),
             PUSH => self.translate_push(token.arg1.as_ref().unwrap(), token.arg2.as_ref().unwrap()),
@@ -30,24 +32,54 @@ impl VmCodeWriter {
         format!("{}\n{}", code, incr_sp)
     }
 
-    fn translate_arithmetic(&self, operator_str: &str) -> String {
+    fn translate_arithmetic(&mut self, operator_str: &str) -> String {
         let incr_and_push = "@SP\nA=M\nM=D\n@SP\nM=M+1";
+        let mut get_label_cnt = || {
+            self.label_cnt += 1;
+            self.label_cnt
+        };
         let formula = match operator_str {
             "add" => format!("D=D+M\n{}", incr_and_push),
             "sub" => format!("D=M-D\n{}", incr_and_push),
             "neg" => format!("D=-D\n{}", incr_and_push),
-            "eq" => format!(
-                    "D=M-D\n@TRUE_LB\nD;JEQ\nD=0\n{}\n@FALSE_LB\n0;JMP\n(TRUE_LB)\nD=-1\n{}\n(FALSE_LB)\n@SP", //@SP is placeholder
-                    incr_and_push, incr_and_push),
-            "gt" => format!(
-                    "D=M-D\n@TRUE_LB\nD;JGT\nD=0\n{}\n@FALSE_LB\n0;JMP\n(TRUE_LB)\nD=-1\n{}\n(FALSE_LB)\n@SP",
-                     incr_and_push, incr_and_push),
-            "lt" => format!(
-                    "D=M-D\n@TRUE_LB\nD;JLT\nD=0\n{}\n@FALSE_LB\n0;JMP\n(TRUE_LB)\nD=-1\n{}\n(FALSE_LB)\n@SP",
-                    incr_and_push, incr_and_push),
             "and" => format!("D=D&M\n{}", incr_and_push),
             "or" => format!("D=D|M\n{}", incr_and_push),
             "not" => format!("D=!D\n{}", incr_and_push),
+            "eq" | "gt" | "lt" => {
+                let cnt = get_label_cnt();
+                let true_label = format!("TRUE_LB_{}", cnt);
+                let false_label = format!("FALSE_LB_{}", cnt);
+                match operator_str {
+                    "eq" => format!(
+                        "D=M-D\n@{}\nD;JEQ\nD=0\n{}\n@{}\n0;JMP\n({})\nD=-1\n{}\n({})\n@SP",
+                        true_label,
+                        incr_and_push,
+                        false_label,
+                        true_label,
+                        incr_and_push,
+                        false_label
+                    ),
+                    "gt" => format!(
+                        "D=M-D\n@{}\nD;JGT\nD=0\n{}\n@{}\n0;JMP\n({})\nD=-1\n{}\n({})\n@SP",
+                        true_label,
+                        incr_and_push,
+                        false_label,
+                        true_label,
+                        incr_and_push,
+                        false_label
+                    ),
+                    "lt" => format!(
+                        "D=M-D\n@{}\nD;JLT\nD=0\n{}\n@{}\n0;JMP\n({})\nD=-1\n{}\n({})\n@SP",
+                        true_label,
+                        incr_and_push,
+                        false_label,
+                        true_label,
+                        incr_and_push,
+                        false_label
+                    ),
+                    _ => panic!(format!("Unknown operator: {}", operator_str)),
+                }
+            }
             _ => panic!(format!("Unknown operator: {}", operator_str)),
         };
         format!("@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\n{}", formula)
@@ -60,7 +92,7 @@ mod tests {
 
     #[test]
     fn for_writer_1() {
-        let writer = VmCodeWriter::new();
+        let mut writer = VmCodeWriter::new();
         let token = VmToken {
             ctype: PUSH,
             arg1: Some("constant".to_string()),
@@ -83,7 +115,7 @@ mod tests {
 
     #[test]
     fn for_writer_2() {
-        let writer = VmCodeWriter::new();
+        let mut writer = VmCodeWriter::new();
         let token = VmToken {
             ctype: PUSH,
             arg1: Some("argument".to_string()),
@@ -109,7 +141,7 @@ mod tests {
 
     #[test]
     fn for_writer_3() {
-        let writer = VmCodeWriter::new();
+        let mut writer = VmCodeWriter::new();
         let token = VmToken {
             ctype: ARITHMETIC,
             arg1: Some("add".to_string()),
@@ -138,7 +170,7 @@ mod tests {
 
     #[test]
     fn for_writer_4() {
-        let writer = VmCodeWriter::new();
+        let mut writer = VmCodeWriter::new();
         let token = VmToken {
             ctype: ARITHMETIC,
             arg1: Some("eq".to_string()),
@@ -154,7 +186,7 @@ mod tests {
             M=M-1
             A=M
             D=M-D
-            @TRUE_LB
+            @TRUE_LB_0
             D;JEQ
             D=0
             @SP
@@ -162,16 +194,16 @@ mod tests {
             M=D
             @SP
             M=M+1
-            @FALSE_LB
+            @FALSE_LB_0
             0;JMP
-            (TRUE_LB)
+            (TRUE_LB_0)
             D=-1
             @SP
             A=M
             M=D
             @SP
             M=M+1
-            (FALSE_LB)
+            (FALSE_LB_0)
             @SP"
             .split_whitespace()
             .collect::<Vec<&str>>()

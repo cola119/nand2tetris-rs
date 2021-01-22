@@ -24,7 +24,7 @@ D=M
 M=M-1
 A=M
 D=M-D
-@TRUE_LB
+@TRUE_LB_0
 D;JGT
 D=0
 @SP
@@ -32,14 +32,14 @@ A=M
 M=D
 @SP
 M=M+1
-@FALSE_LB
+@FALSE_LB_0
 0;JMP
-(TRUE_LB)
+(TRUE_LB_0)
 D=-1
 @SP
 A=M
 M=D
 @SP
 M=M+1
-(FALSE_LB)
+(FALSE_LB_0)
 @SP
