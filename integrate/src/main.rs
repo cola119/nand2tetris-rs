@@ -1,4 +1,4 @@
-#![allow(dead_code)]
+#![allow(dead_code, unused_imports)]
 extern crate assembler;
 extern crate hardware;
 extern crate vm_translator;
@@ -52,20 +52,28 @@ impl VmScanner {
 }
 
 fn main() {
-    let scanner = VmScanner::new("integrate/src/programs/Add");
+    let scanner = VmScanner::new("integrate/src/programs/StackTest");
     scanner.run();
 
-    let server = TcpListener::bind("127.0.0.1:9001").unwrap();
-    for stream in server.incoming() {
-        match stream {
-            Err(e) => panic!(e),
-            Ok(tcp) => {
-                tcp.set_nonblocking(true).unwrap();
-                let socket = accept(tcp).unwrap();
-                start_computer(socket, &scanner.ml_path);
-            }
-        }
-    }
+    println!("------ start_computer ------");
+    let mut computer = Computer::new(None, false);
+    computer.run(&scanner.ml_path, false);
+
+    println!("{}", computer.get_memory_info(0, 8));
+    println!("{}", computer.get_memory_info(256, 260));
+    println!("------ start_stop ------");
+
+    // let server = TcpListener::bind("127.0.0.1:9001").unwrap();
+    // for stream in server.incoming() {
+    //     match stream {
+    //         Err(e) => panic!(e),
+    //         Ok(tcp) => {
+    //             tcp.set_nonblocking(true).unwrap();
+    //             let socket = accept(tcp).unwrap();
+    //             start_computer(socket, &scanner.ml_path);
+    //         }
+    //     }
+    // }
 }
 
 fn start_computer(mut socket: WebSocket<TcpStream>, filename: &str) {
